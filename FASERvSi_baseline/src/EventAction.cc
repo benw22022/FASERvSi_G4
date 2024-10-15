@@ -41,9 +41,8 @@
 #include "MuonHit.hh"
 #include "TrackerHit.hh"
 
-
-
-
+#include "DetectorParameters.hh"
+#include <string>
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -58,163 +57,43 @@ EventAction::EventAction()
 
   //man->SetFirstNtupleColumnId(1);
   
-  man->CreateNtuple("Hits1","Hits1");
-  man->CreateNtupleIColumn("fEvent");
-  man->CreateNtupleDColumn("ep_x");
-  man->CreateNtupleDColumn("ep_y");
-  man->CreateNtupleDColumn("ep_z");
-  man->CreateNtupleDColumn("ep_E");
-  man->CreateNtupleDColumn("em_x");
-  man->CreateNtupleDColumn("em_y");
-  man->CreateNtupleDColumn("em_z");
-  man->CreateNtupleDColumn("em_E");
+  for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
+  {   
 
-  man->CreateNtupleDColumn("mp_x");
-  man->CreateNtupleDColumn("mp_y");
-  man->CreateNtupleDColumn("mp_z");
-  man->CreateNtupleDColumn("mp_E");
-  man->CreateNtupleDColumn("mm_x");
-  man->CreateNtupleDColumn("mm_y");
-  man->CreateNtupleDColumn("mm_z");
-  man->CreateNtupleDColumn("mm_E");
+    std::string treeName = "Hits" + std::to_string(i+1);
 
-  man->CreateNtupleDColumn("hp_x");
-  man->CreateNtupleDColumn("hp_y");
-  man->CreateNtupleDColumn("hp_z");
-  man->CreateNtupleDColumn("hp_E");
-  man->CreateNtupleDColumn("hm_x");
-  man->CreateNtupleDColumn("hm_y");
-  man->CreateNtupleDColumn("hm_z");
-  man->CreateNtupleDColumn("hm_E");
+    man->CreateNtuple(treeName, treeName);
+    man->CreateNtupleIColumn("fEvent");
+    man->CreateNtupleDColumn("ep_x");
+    man->CreateNtupleDColumn("ep_y");
+    man->CreateNtupleDColumn("ep_z");
+    man->CreateNtupleDColumn("ep_E");
+    man->CreateNtupleDColumn("em_x");
+    man->CreateNtupleDColumn("em_y");
+    man->CreateNtupleDColumn("em_z");
+    man->CreateNtupleDColumn("em_E");
 
-  //man->FinishNtuple(0);
-  man->FinishNtuple();
-    
-  man->CreateNtuple("Hits2","Hits2");
-  man->CreateNtupleIColumn("fEvent");
-  man->CreateNtupleDColumn("ep_x");
-  man->CreateNtupleDColumn("ep_y");
-  man->CreateNtupleDColumn("ep_z");
-  man->CreateNtupleDColumn("ep_E");
-  man->CreateNtupleDColumn("em_x");
-  man->CreateNtupleDColumn("em_y");
-  man->CreateNtupleDColumn("em_z");
-  man->CreateNtupleDColumn("em_E");
+    man->CreateNtupleDColumn("mp_x");
+    man->CreateNtupleDColumn("mp_y");
+    man->CreateNtupleDColumn("mp_z");
+    man->CreateNtupleDColumn("mp_E");
+    man->CreateNtupleDColumn("mm_x");
+    man->CreateNtupleDColumn("mm_y");
+    man->CreateNtupleDColumn("mm_z");
+    man->CreateNtupleDColumn("mm_E");
 
-  man->CreateNtupleDColumn("mp_x");
-  man->CreateNtupleDColumn("mp_y");
-  man->CreateNtupleDColumn("mp_z");
-  man->CreateNtupleDColumn("mp_E");
-  man->CreateNtupleDColumn("mm_x");
-  man->CreateNtupleDColumn("mm_y");
-  man->CreateNtupleDColumn("mm_z");
-  man->CreateNtupleDColumn("mm_E");
+    man->CreateNtupleDColumn("hp_x");
+    man->CreateNtupleDColumn("hp_y");
+    man->CreateNtupleDColumn("hp_z");
+    man->CreateNtupleDColumn("hp_E");
+    man->CreateNtupleDColumn("hm_x");
+    man->CreateNtupleDColumn("hm_y");
+    man->CreateNtupleDColumn("hm_z");
+    man->CreateNtupleDColumn("hm_E");
 
-  man->CreateNtupleDColumn("hp_x");
-  man->CreateNtupleDColumn("hp_y");
-  man->CreateNtupleDColumn("hp_z");
-  man->CreateNtupleDColumn("hp_E");
-  man->CreateNtupleDColumn("hm_x");
-  man->CreateNtupleDColumn("hm_y");
-  man->CreateNtupleDColumn("hm_z");
-  man->CreateNtupleDColumn("hm_E");
-
-  man->FinishNtuple();
-
-    
-  man->CreateNtuple("Hits3","Hits3");
-  man->CreateNtupleIColumn("fEvent");
-  man->CreateNtupleDColumn("ep_x");
-  man->CreateNtupleDColumn("ep_y");
-  man->CreateNtupleDColumn("ep_z");
-  man->CreateNtupleDColumn("ep_E");
-  man->CreateNtupleDColumn("em_x");
-  man->CreateNtupleDColumn("em_y");
-  man->CreateNtupleDColumn("em_z");
-  man->CreateNtupleDColumn("em_E");
-
-  man->CreateNtupleDColumn("mp_x");
-  man->CreateNtupleDColumn("mp_y");
-  man->CreateNtupleDColumn("mp_z");
-  man->CreateNtupleDColumn("mp_E");
-  man->CreateNtupleDColumn("mm_x");
-  man->CreateNtupleDColumn("mm_y");
-  man->CreateNtupleDColumn("mm_z");
-  man->CreateNtupleDColumn("mm_E");
-
-  man->CreateNtupleDColumn("hp_x");
-  man->CreateNtupleDColumn("hp_y");
-  man->CreateNtupleDColumn("hp_z");
-  man->CreateNtupleDColumn("hp_E");
-  man->CreateNtupleDColumn("hm_x");
-  man->CreateNtupleDColumn("hm_y");
-  man->CreateNtupleDColumn("hm_z");
-  man->CreateNtupleDColumn("hm_E");
-
-  man->FinishNtuple();
-
-  man->CreateNtuple("Hits4","Hits4");
-  man->CreateNtupleIColumn("fEvent");
-  man->CreateNtupleDColumn("ep_x");
-  man->CreateNtupleDColumn("ep_y");
-  man->CreateNtupleDColumn("ep_z");
-  man->CreateNtupleDColumn("ep_E");
-  man->CreateNtupleDColumn("em_x");
-  man->CreateNtupleDColumn("em_y");
-  man->CreateNtupleDColumn("em_z");
-  man->CreateNtupleDColumn("em_E");
-
-  man->CreateNtupleDColumn("mp_x");
-  man->CreateNtupleDColumn("mp_y");
-  man->CreateNtupleDColumn("mp_z");
-  man->CreateNtupleDColumn("mp_E");
-  man->CreateNtupleDColumn("mm_x");
-  man->CreateNtupleDColumn("mm_y");
-  man->CreateNtupleDColumn("mm_z");
-  man->CreateNtupleDColumn("mm_E");
-
-  man->CreateNtupleDColumn("hp_x");
-  man->CreateNtupleDColumn("hp_y");
-  man->CreateNtupleDColumn("hp_z");
-  man->CreateNtupleDColumn("hp_E");
-  man->CreateNtupleDColumn("hm_x");
-  man->CreateNtupleDColumn("hm_y");
-  man->CreateNtupleDColumn("hm_z");
-  man->CreateNtupleDColumn("hm_E");
-
-  man->FinishNtuple();
-
-  man->CreateNtuple("Hits5","Hits5");
-  man->CreateNtupleIColumn("fEvent");
-  man->CreateNtupleDColumn("ep_x");
-  man->CreateNtupleDColumn("ep_y");
-  man->CreateNtupleDColumn("ep_z");
-  man->CreateNtupleDColumn("ep_E");
-  man->CreateNtupleDColumn("em_x");
-  man->CreateNtupleDColumn("em_y");
-  man->CreateNtupleDColumn("em_z");
-  man->CreateNtupleDColumn("em_E");
-
-  man->CreateNtupleDColumn("mp_x");
-  man->CreateNtupleDColumn("mp_y");
-  man->CreateNtupleDColumn("mp_z");
-  man->CreateNtupleDColumn("mp_E");
-  man->CreateNtupleDColumn("mm_x");
-  man->CreateNtupleDColumn("mm_y");
-  man->CreateNtupleDColumn("mm_z");
-  man->CreateNtupleDColumn("mm_E");
-
-  man->CreateNtupleDColumn("hp_x");
-  man->CreateNtupleDColumn("hp_y");
-  man->CreateNtupleDColumn("hp_z");
-  man->CreateNtupleDColumn("hp_E");
-  man->CreateNtupleDColumn("hm_x");
-  man->CreateNtupleDColumn("hm_y");
-  man->CreateNtupleDColumn("hm_z");
-  man->CreateNtupleDColumn("hm_E");
-
-  man->FinishNtuple();
-
+    //man->FinishNtuple(0);
+    man->FinishNtuple();
+  }  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -242,24 +121,20 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   auto hce = evt->GetHCofThisEvent();
   auto sdManager = G4SDManager::GetSDMpointer();
   G4int collId;
-
   G4int offset=0;
-  std::vector<std::string> sensDets;
-  sensDets.push_back("sensDet1");
-  // sensDets.push_back("sensDet2");
-  // sensDets.push_back("sensDet3");
-  // sensDets.push_back("sensDet4");
-  // sensDets.push_back("sensDet5");
+  
+  for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
+  {   
 
-  for (unsigned int isd = 0; isd < sensDets.size(); isd++) {
+    std::string detName = "sensDet" + std::to_string(i);  
     
-    G4cout << ">>>     Filling ntuple for " << sensDets[isd] << " " << isd << G4endl;
+    G4cout << ">>>     Filling ntuple for " << detName << " " << i << G4endl;
     
     
-    collId = sdManager->GetCollectionID(sensDets[isd]);
+    collId = sdManager->GetCollectionID(detName);
     auto hc = hce->GetHC(collId);
     if (!hc){
-      G4cout << ">>>     ERROR didn't find " << sensDets[isd] << G4endl;
+      G4cout << ">>>     ERROR didn't find " << detName << G4endl;
       return;
     }
     
@@ -272,7 +147,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     G4int charge_h=0;
     
     
-    man->FillNtupleIColumn(isd,0,evt->GetEventID());
+    man->FillNtupleIColumn(i,0,evt->GetEventID());
     
     for (unsigned int i = 0; i < hc->GetSize(); ++i) {
       auto hit = static_cast<DetectorHit *>(hc->GetHit(i));
@@ -281,50 +156,50 @@ void EventAction::EndOfEventAction(const G4Event* evt)
       if (hit->GetEnergy() < 1)continue;
       
       if (hit->GetPDGID() == -11){
-	man->FillNtupleDColumn(isd,1,hit->GetX());
-	man->FillNtupleDColumn(isd,2,hit->GetY());
-	man->FillNtupleDColumn(isd,3,hit->GetZ());
-	man->FillNtupleDColumn(isd,4,hit->GetEnergy());
+	man->FillNtupleDColumn(i,1,hit->GetX());
+	man->FillNtupleDColumn(i,2,hit->GetY());
+	man->FillNtupleDColumn(i,3,hit->GetZ());
+	man->FillNtupleDColumn(i,4,hit->GetEnergy());
 	count_charge-=1;
 	count_e+=1;
 	charge_e-=1;
       }else if(hit->GetPDGID() == 11){
-	man->FillNtupleDColumn(isd,5,hit->GetX());
-	man->FillNtupleDColumn(isd,6,hit->GetY());
-	man->FillNtupleDColumn(isd,7,hit->GetZ());
-	man->FillNtupleDColumn(isd,8,hit->GetEnergy());
+	man->FillNtupleDColumn(i,5,hit->GetX());
+	man->FillNtupleDColumn(i,6,hit->GetY());
+	man->FillNtupleDColumn(i,7,hit->GetZ());
+	man->FillNtupleDColumn(i,8,hit->GetEnergy());
 	count_charge+=1;
 	count_e+=1;
 	charge_e+=1;
       }else if (hit->GetPDGID() == -13){
-	man->FillNtupleDColumn(isd,9,hit->GetX());
-	man->FillNtupleDColumn(isd,10,hit->GetY());
-	man->FillNtupleDColumn(isd,11,hit->GetZ());
-	man->FillNtupleDColumn(isd,12,hit->GetEnergy());
+	man->FillNtupleDColumn(i,9,hit->GetX());
+	man->FillNtupleDColumn(i,10,hit->GetY());
+	man->FillNtupleDColumn(i,11,hit->GetZ());
+	man->FillNtupleDColumn(i,12,hit->GetEnergy());
 	count_charge-=1;
 	count_m+=1;
 	charge_m-=1;
       }else if(hit->GetPDGID() == 13){
-	man->FillNtupleDColumn(isd,13,hit->GetX());
-	man->FillNtupleDColumn(isd,14,hit->GetY());
-	man->FillNtupleDColumn(isd,15,hit->GetZ());
-	man->FillNtupleDColumn(isd,16,hit->GetEnergy());
+	man->FillNtupleDColumn(i,13,hit->GetX());
+	man->FillNtupleDColumn(i,14,hit->GetY());
+	man->FillNtupleDColumn(i,15,hit->GetZ());
+	man->FillNtupleDColumn(i,16,hit->GetEnergy());
 	count_charge+=1;
 	count_m+=1;
 	charge_m+=1;
       }else if ((hit->GetPDGID() < 0 && hit->GetPDGID() > -6) || hit->GetPDGID() < -25){
-	man->FillNtupleDColumn(isd,17,hit->GetX());
-	man->FillNtupleDColumn(isd,18,hit->GetY());
-	man->FillNtupleDColumn(isd,19,hit->GetZ());
-	man->FillNtupleDColumn(isd,20,hit->GetEnergy());
+	man->FillNtupleDColumn(i,17,hit->GetX());
+	man->FillNtupleDColumn(i,18,hit->GetY());
+	man->FillNtupleDColumn(i,19,hit->GetZ());
+	man->FillNtupleDColumn(i,20,hit->GetEnergy());
 	count_charge-=1;
 	count_h+=1;
 	charge_h-=1;
       }else if ((hit->GetPDGID() > 0 && hit->GetPDGID() < 6) || hit->GetPDGID() > 25){
-	man->FillNtupleDColumn(isd,21,hit->GetX());
-	man->FillNtupleDColumn(isd,22,hit->GetY());
-	man->FillNtupleDColumn(isd,23,hit->GetZ());
-	man->FillNtupleDColumn(isd,24,hit->GetEnergy());
+	man->FillNtupleDColumn(i,21,hit->GetX());
+	man->FillNtupleDColumn(i,22,hit->GetY());
+	man->FillNtupleDColumn(i,23,hit->GetZ());
+	man->FillNtupleDColumn(i,24,hit->GetEnergy());
 	count_charge+=1;
 	count_h+=1;
 	charge_h+=1;
@@ -334,7 +209,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     if ( (count_e==2 && charge_e==0) ||
 	 (count_m==2 && charge_m==0) ||
 	 (count_h==2 && charge_h==0) ){
-       man->AddNtupleRow(isd);
+       man->AddNtupleRow(i);
     }else{
       //G4cout << "WARNING: Did not find pair of opposite charge particles:"  << G4endl;
       //G4cout << "   count_e = " << count_e << " charge_e = " << charge_e << G4endl;

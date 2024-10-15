@@ -117,9 +117,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   experimentalHallVisAtt-> SetForceWireframe(true);
   experimentalHall_log->SetVisAttributes(experimentalHallVisAtt);
 
-
+  // Loop over number of SCT layers assume; assume Tungsten and SCT modules are directly adjacent
   for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
-{   
+  {   
     
     //------------------------------ Targets (tungsten sheets)
     std::string targetLogVolName = "Target" + std::to_string(i+1) + "_log";
