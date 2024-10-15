@@ -1,0 +1,13 @@
+**~
+**.root
+**.o
+.bashrc
+.inputrc
+*-build
+*.hepmc
+*.cache
+*.log
+*.pdf
+*.bash_history
+*logfile
+*.vscode
