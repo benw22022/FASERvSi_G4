@@ -30,23 +30,29 @@
 
 #include "PrimaryGeneratorAction.hh"
 #include "PrimaryGeneratorMessenger.hh"
+#include "GENIEPrimaryGeneratorAction.hh"
+#include "HepMCG4AsciiReader.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
-#include "HepMCG4AsciiReader.hh"
+#include "G4GeneralParticleSource.hh"
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 PrimaryGeneratorAction::PrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction()
 {
+  // TODO: Disable HEPMC generation for now - add back in later
   // default generator is particle gun.
-  fCurrentGenerator = fParticleGun= new G4ParticleGun();
-  fCurrentGeneratorName = "fParticleGun";
-  fHepmcAscii = new HepMCG4AsciiReader();
+  fGPS = new G4GeneralParticleSource();
+  // fCurrentGenerator = fParticleGun= new G4ParticleGun();
+  // fCurrentGeneratorName = "fParticleGun";
+  // fHepmcAscii = new HepMCG4AsciiReader();
+  fActionGenie = new GENIEPrimaryGeneratorAction(fGPS);
 
-  fGentypeMap["particleGun"] = fParticleGun;
-  fGentypeMap["hepmcAscii"] = fHepmcAscii;
-
+  // fGentypeMap["particleGun"] = fParticleGun;
+  // fGentypeMap["hepmcAscii"] = fHepmcAscii;
+  // fGentypeMap["genie"] = fGenieGen;
 
   fMessenger= new PrimaryGeneratorMessenger(this);
 }
@@ -60,10 +66,11 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  if(fCurrentGenerator)
-    fCurrentGenerator-> GeneratePrimaryVertex(anEvent);
-  else
-    G4Exception("PrimaryGeneratorAction::GeneratePrimaries",
-                "PrimaryGeneratorAction001", FatalException,
-                "generator is not instanciated." );
+  // if(fCurrentGenerator)
+    fActionGenie->GeneratePrimaries(anEvent, fFileName, fEvtStartIdx, 1);
+    // fCurrentGenerator-> GeneratePrimaryVertex(anEvent);
+  // else
+  //   G4Exception("PrimaryGeneratorAction::GeneratePrimaries",
+  //               "PrimaryGeneratorAction001", FatalException,
+  //               "generator is not instanciated." );
 }

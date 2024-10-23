@@ -38,6 +38,8 @@
 class G4Event;
 class G4VPrimaryGenerator;
 class PrimaryGeneratorMessenger;
+class G4GeneralParticleSource;
+class GENIEPrimaryGeneratorAction;
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
 public:
@@ -49,19 +51,25 @@ public:
   void SetGenerator(G4VPrimaryGenerator* gen);
   void SetGenerator(G4String genname);
 
+  void setGenieInputFile(G4String val) { fFileName = val; }
+
   G4VPrimaryGenerator* GetGenerator() const;
   G4String GetGeneratorName() const;
 
 private:
-  G4VPrimaryGenerator* fParticleGun;
-  G4VPrimaryGenerator* fHepmcAscii;
-  G4VPrimaryGenerator* fPythiaGen;
+  // G4VPrimaryGenerator* fParticleGun;
+  // G4VPrimaryGenerator* fHepmcAscii;
+  GENIEPrimaryGeneratorAction* fActionGenie;
+  G4GeneralParticleSource* fGPS;
 
   G4VPrimaryGenerator* fCurrentGenerator;
   G4String fCurrentGeneratorName;
   std::map<G4String, G4VPrimaryGenerator*> fGentypeMap;
 
   PrimaryGeneratorMessenger* fMessenger;
+
+  G4String fFileName;
+  G4int fEvtStartIdx;
 
 };
 

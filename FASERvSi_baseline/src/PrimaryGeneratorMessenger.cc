@@ -49,17 +49,22 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger
   fDir= new G4UIdirectory("/generator/");
   fDir-> SetGuidance("Control commands for primary generator");
 
-  fSelect= new G4UIcmdWithAString("/generator/select", this);
-  fSelect-> SetGuidance("fSelect generator type");
-  fSelect-> SetParameterName("generator_type", false, false);
-  fSelect-> SetCandidates("particleGun pythia hepmcAscii");
-  fSelect-> SetDefaultValue("particleGun");
+  // fSelect= new G4UIcmdWithAString("/generator/select", this);
+  // fSelect-> SetGuidance("fSelect generator type");
+  // fSelect-> SetParameterName("generator_type", false, false);
+  // fSelect-> SetCandidates("particleGun pythia hepmcAscii genie");
+  // fSelect-> SetDefaultValue("particleGun");
+
+  GHEPInputFile = new G4UIcmdWithAString("/genie/genieInput", this);
+  GHEPInputFile->SetGuidance("set input filename of the genie generator");
+  //GHEPInputFile->SetDefaultValue("");
+  GHEPInputFile->AvailableForStates(G4State_PreInit, G4State_Init, G4State_Idle);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
-  delete fSelect;
+  // delete fSelect;
   delete fMyDetDir;
   delete fDir;
 }
@@ -68,11 +73,13 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command,
                                               G4String newValues)
 {
-  if ( command == fSelect ) {
-    fPrimaryAction-> SetGenerator(newValues);
-    G4cout << "current generator type: "
-            << fPrimaryAction-> GetGeneratorName() << G4endl;
-  }
+   if (command == GHEPInputFile) fPrimaryAction->setGenieInputFile(newValues);
+
+  // if ( command == fSelect ) {
+  //   fPrimaryAction-> SetGenerator(newValues);
+  //   G4cout << "current generator type: "
+  //           << fPrimaryAction-> GetGeneratorName() << G4endl;
+  // }
 }
 
 

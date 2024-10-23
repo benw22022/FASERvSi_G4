@@ -56,6 +56,7 @@ private:
   G4UIdirectory* fDir;
   G4UIdirectory* fMyDetDir;
   G4UIcmdWithAString* fSelect;
+  G4UIcmdWithAString* GHEPInputFile;
 
 };
 
