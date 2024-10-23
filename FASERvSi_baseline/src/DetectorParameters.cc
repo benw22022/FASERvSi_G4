@@ -5,16 +5,16 @@ DetectorParameters *DetectorParameters::me = 0;
 
 DetectorParameters::DetectorParameters()
 {
-    fexpHall_x = 0.5*m;
-    fexpHall_y = 0.5*m;
-    fexpHall_z = 2*m;
+    fexpHall_x = 1*m;
+    fexpHall_y = 1*m;
+    fexpHall_z = 6*m;
     
-    ftargetStartPosZ = -0.75*m;
-    fdetWidth = 25*cm;
-    fdetHeight = 30*cm;
+    ftargetStartPosZ = 550*mm;
+    fdetWidth = 250*mm;
+    fdetHeight = 300*mm;
 
-    ftungstenThickness = 9*mm;
-    fSCTThickness = 7.08*mm;
+    ftungstenThickness = 0.9*mm;
+    fSCTThickness = 0.5*mm; // 7.08*mm;
 
     fnumSCTLayers = 132;
 

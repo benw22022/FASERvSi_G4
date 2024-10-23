@@ -49,6 +49,7 @@
 #include "G4VisAttributes.hh"
 #include "G4UImessenger.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4GDMLParser.hh"
 
 #include "DetectorConstruction.hh"
 #include "DetectorParameters.hh"
@@ -56,6 +57,8 @@
 #include "TrackerSD.hh"
 #include "Detector.hh"
 #include <string>
+#include <fstream>
+
 
 
 
@@ -86,6 +89,14 @@ void DetectorConstruction::DefineMaterials()
   G4double a, z, density;
   G4int nel;
 
+  // Vacuum
+  G4double universe_mean_density = 1.e-25*g/cm3;
+  G4Element* elN  = new G4Element("Nitrogen","N",  z=7.,  a= 14.00674*g/mole);
+  G4Element* elO  = new G4Element("Oxygen",  "O",  z=8.,  a= 15.9994*g/mole);
+  fVacuum = new G4Material("universe_mean_density", 1.e-25*g/cm3, nel=2);
+  fVacuum-> AddElement(elN, .7);
+  fVacuum-> AddElement(elO, .3);
+
   // Scintillator
   G4Element* elH = nistManager->FindOrBuildElement("H");
   G4Element* elC = nistManager->FindOrBuildElement("C");
@@ -108,8 +119,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //-------------------------------------------------------------------------
 
   //------------------------------ experimental hall
-  G4Box* experimentalHall_box = new G4Box("expHall_b", DetectorParameters::Get()->fexpHall_x, DetectorParameters::Get()->fexpHall_y, DetectorParameters::Get()->fexpHall_z);
-  G4LogicalVolume* experimentalHall_log = new G4LogicalVolume(experimentalHall_box, fAir,"expHall_L", 0,0,0);
+  G4Box* experimentalHall_box = new G4Box("expHall_b", DetectorParameters::Get()->fexpHall_x/2, DetectorParameters::Get()->fexpHall_y/2, DetectorParameters::Get()->fexpHall_z/2);
+  G4LogicalVolume* experimentalHall_log = new G4LogicalVolume(experimentalHall_box, fVacuum,"expHall_L", 0,0,0);
   
   G4VPhysicalVolume * experimentalHall_phys = new G4PVPlacement(0, G4ThreeVector(), experimentalHall_log, "expHall_P", 0, false,0);
   G4VisAttributes* experimentalHallVisAtt = new G4VisAttributes(G4Colour(1.,1.,1.));
@@ -142,7 +153,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     std::string SDPhysVolName = "SD" + std::to_string(i+1) + "_phys";
 
     G4Box* SD_box = new G4Box("SD_box", DetectorParameters::Get()->fdetWidth/2, DetectorParameters::Get()->fdetHeight/2, DetectorParameters::Get()->fSCTThickness/2);
-    G4LogicalVolume* SD_log = new G4LogicalVolume(SD_box, fAir, "SD1_log");
+    G4LogicalVolume* SD_log = new G4LogicalVolume(SD_box, fVacuum, "SD1_log");
     SD_log->SetVisAttributes(new G4VisAttributes(G4Colour::Red()));
     
     G4double SDOffset = DetectorParameters::Get()->ftargetStartPosZ + DetectorParameters::Get()->ftungstenThickness + i * (DetectorParameters::Get()->fSCTThickness + DetectorParameters::Get()->ftungstenThickness);
@@ -151,7 +162,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     fSD_log.push_back(SD_log);
     fSD_phys.push_back(SD_phys);
   }
-    
+  
+
+  // ------------ GDML dump
+  G4GDMLParser* gdmlParser = new G4GDMLParser();  
+  std::remove("FASERvSi_baseline.gdml"); // delete file
+  gdmlParser->Write("FASERvSi_baseline.gdml", experimentalHall_phys);
+  delete gdmlParser;
+
+
   return experimentalHall_phys;
 }
 

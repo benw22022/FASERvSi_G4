@@ -56,6 +56,7 @@ private:
   G4Material* fSilicon;
   G4Material* fScinti;
   G4Material* fTungsten;
+  G4Material* fVacuum;
   
   std::vector<G4LogicalVolume*> fTarget_log;
   std::vector<G4LogicalVolume*> fSD_log;
