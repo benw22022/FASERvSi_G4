@@ -59,8 +59,8 @@ EventAction::EventAction()
   
   for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
   {   
-
     std::string treeName = "Hits" + std::to_string(i+1);
+    std::cout << "Making tree " << treeName << std::endl;
 
     man->CreateNtuple(treeName, treeName);
     man->CreateNtupleIColumn("fEvent");
@@ -91,7 +91,6 @@ EventAction::EventAction()
     man->CreateNtupleDColumn("hm_z");
     man->CreateNtupleDColumn("hm_E");
 
-    //man->FinishNtuple(0);
     man->FinishNtuple();
   }  
 }
@@ -117,18 +116,17 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 
   G4int nPerTree=25;
   
-    
   auto hce = evt->GetHCofThisEvent();
   auto sdManager = G4SDManager::GetSDMpointer();
   G4int collId;
   G4int offset=0;
   
-  for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
+  for (unsigned int tree_idx{0}; tree_idx < DetectorParameters::Get()->fnumSCTLayers; tree_idx++)
   {   
 
-    std::string detName = "sensDet" + std::to_string(i);  
+    std::string detName = "sensDet" + std::to_string(tree_idx);  
     
-    G4cout << ">>>     Filling ntuple for " << detName << " " << i << G4endl;
+    // G4cout << ">>>     Filling ntuple for " << detName << G4endl;
     
     
     collId = sdManager->GetCollectionID(detName);
@@ -147,117 +145,71 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     G4int charge_h=0;
     
     
-    man->FillNtupleIColumn(i,0,evt->GetEventID());
+    man->FillNtupleIColumn(tree_idx,0,evt->GetEventID());
     
+    if (hc->GetSize() == 0){
+        G4cout << ">>>     ERROR Empty Hits Collection" << G4endl;
+    }
+
     for (unsigned int i = 0; i < hc->GetSize(); ++i) {
       auto hit = static_cast<DetectorHit *>(hc->GetHit(i));
-      //G4cout << "hitX: " << hit->GetX() << G4endl;
-      //G4cout << "hit x: " << hit->GetX() << " y: " << hit->GetY() << " z: " << hit->GetZ() << " E: " << hit->GetEnergy() << " ID: " << hit->GetPDGID() << G4endl;     
+      // G4cout << "hitX: " << hit->GetX() << G4endl;
+      // G4cout << "hit x: " << hit->GetX() << " y: " << hit->GetY() << " z: " << hit->GetZ() << " E: " << hit->GetEnergy() << " ID: " << hit->GetPDGID() << G4endl;     
       if (hit->GetEnergy() < 1)continue;
       
       if (hit->GetPDGID() == -11){
-	man->FillNtupleDColumn(i,1,hit->GetX());
-	man->FillNtupleDColumn(i,2,hit->GetY());
-	man->FillNtupleDColumn(i,3,hit->GetZ());
-	man->FillNtupleDColumn(i,4,hit->GetEnergy());
+	man->FillNtupleDColumn(tree_idx,1,hit->GetX());
+	man->FillNtupleDColumn(tree_idx,2,hit->GetY());
+	man->FillNtupleDColumn(tree_idx,3,hit->GetZ());
+	man->FillNtupleDColumn(tree_idx,4,hit->GetEnergy());
 	count_charge-=1;
 	count_e+=1;
 	charge_e-=1;
       }else if(hit->GetPDGID() == 11){
-	man->FillNtupleDColumn(i,5,hit->GetX());
-	man->FillNtupleDColumn(i,6,hit->GetY());
-	man->FillNtupleDColumn(i,7,hit->GetZ());
-	man->FillNtupleDColumn(i,8,hit->GetEnergy());
+	man->FillNtupleDColumn(tree_idx,5,hit->GetX());
+	man->FillNtupleDColumn(tree_idx,6,hit->GetY());
+	man->FillNtupleDColumn(tree_idx,7,hit->GetZ());
+	man->FillNtupleDColumn(tree_idx,8,hit->GetEnergy());
 	count_charge+=1;
 	count_e+=1;
 	charge_e+=1;
       }else if (hit->GetPDGID() == -13){
-	man->FillNtupleDColumn(i,9,hit->GetX());
-	man->FillNtupleDColumn(i,10,hit->GetY());
-	man->FillNtupleDColumn(i,11,hit->GetZ());
-	man->FillNtupleDColumn(i,12,hit->GetEnergy());
+	man->FillNtupleDColumn(tree_idx,9,hit->GetX());
+	man->FillNtupleDColumn(tree_idx,10,hit->GetY());
+	man->FillNtupleDColumn(tree_idx,11,hit->GetZ());
+	man->FillNtupleDColumn(tree_idx,12,hit->GetEnergy());
 	count_charge-=1;
 	count_m+=1;
 	charge_m-=1;
       }else if(hit->GetPDGID() == 13){
-	man->FillNtupleDColumn(i,13,hit->GetX());
-	man->FillNtupleDColumn(i,14,hit->GetY());
-	man->FillNtupleDColumn(i,15,hit->GetZ());
-	man->FillNtupleDColumn(i,16,hit->GetEnergy());
+	man->FillNtupleDColumn(tree_idx,13,hit->GetX());
+	man->FillNtupleDColumn(tree_idx,14,hit->GetY());
+	man->FillNtupleDColumn(tree_idx,15,hit->GetZ());
+	man->FillNtupleDColumn(tree_idx,16,hit->GetEnergy());
 	count_charge+=1;
 	count_m+=1;
 	charge_m+=1;
       }else if ((hit->GetPDGID() < 0 && hit->GetPDGID() > -6) || hit->GetPDGID() < -25){
-	man->FillNtupleDColumn(i,17,hit->GetX());
-	man->FillNtupleDColumn(i,18,hit->GetY());
-	man->FillNtupleDColumn(i,19,hit->GetZ());
-	man->FillNtupleDColumn(i,20,hit->GetEnergy());
+	man->FillNtupleDColumn(tree_idx,17,hit->GetX());
+	man->FillNtupleDColumn(tree_idx,18,hit->GetY());
+	man->FillNtupleDColumn(tree_idx,19,hit->GetZ());
+	man->FillNtupleDColumn(tree_idx,20,hit->GetEnergy());
 	count_charge-=1;
 	count_h+=1;
 	charge_h-=1;
       }else if ((hit->GetPDGID() > 0 && hit->GetPDGID() < 6) || hit->GetPDGID() > 25){
-	man->FillNtupleDColumn(i,21,hit->GetX());
-	man->FillNtupleDColumn(i,22,hit->GetY());
-	man->FillNtupleDColumn(i,23,hit->GetZ());
-	man->FillNtupleDColumn(i,24,hit->GetEnergy());
+	man->FillNtupleDColumn(tree_idx,21,hit->GetX());
+	man->FillNtupleDColumn(tree_idx,22,hit->GetY());
+	man->FillNtupleDColumn(tree_idx,23,hit->GetZ());
+	man->FillNtupleDColumn(tree_idx,24,hit->GetEnergy());
 	count_charge+=1;
 	count_h+=1;
 	charge_h+=1;
       }
     }
-    
-    if ( (count_e==2 && charge_e==0) ||
-	 (count_m==2 && charge_m==0) ||
-	 (count_h==2 && charge_h==0) ){
-       man->AddNtupleRow(i);
-    }else{
-      //G4cout << "WARNING: Did not find pair of opposite charge particles:"  << G4endl;
-      //G4cout << "   count_e = " << count_e << " charge_e = " << charge_e << G4endl;
-      //G4cout << "   count_m = " << count_m << " charge_m = " << charge_m << G4endl;
-      //G4cout << "   count_h = " << count_h << " charge_h = " << charge_h << G4endl; 
-    }
+   
+  man->AddNtupleRow(tree_idx);
     
   }
-
-
-  
-  /*
-  if( ftrackerCollID<0 || fcalorimeterCollID<0 || fmuonCollID<0) return;
-
-  G4HCofThisEvent* HCE = evt-> GetHCofThisEvent();
-  TrackerHitsCollection* THC = NULL;
-  CalorimeterHitsCollection* CHC = NULL;
-  MuonHitsCollection* MHC = NULL;
-
-  if( HCE ) {
-    THC = (TrackerHitsCollection*)(HCE->GetHC(ftrackerCollID));
-    CHC = (CalorimeterHitsCollection*)(HCE->GetHC(fcalorimeterCollID));
-    MHC = (MuonHitsCollection*)(HCE->GetHC(fmuonCollID));
-  }
-
-  if( THC ) {
-    G4int n_hit = THC-> entries();
-    G4cout << "     " << n_hit
-         << " hits are stored in TrackerHitsCollection." << G4endl;
-  }
-
-  if( CHC ) {
-    G4int n_hit = CHC-> entries();
-    G4cout << "     " << n_hit
-         << " hits are stored in CalorimeterHitsCollection." << G4endl;
-    G4double totE = 0;
-    for( int i = 0; i < n_hit; i++ ) {
-      totE += (*CHC)[i]-> GetEdep();
-    }
-    G4cout << "     Total energy deposition in calorimeter : "
-         << totE / GeV << " (GeV)" << G4endl;
-  }
-
-  if( MHC ) {
-    G4int n_hit = MHC-> entries();
-    G4cout << "     " << n_hit
-         << " hits are stored in MuonHitsCollection." << G4endl;
-  }
-  */
 }
 
