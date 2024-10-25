@@ -148,7 +148,36 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     man->FillNtupleIColumn(tree_idx,0,evt->GetEventID());
     
     if (hc->GetSize() == 0){
-        G4cout << ">>>     ERROR Empty Hits Collection" << G4endl;
+        G4cout << ">>>     WARNING: Empty Hits Collection in " << detName << G4endl;
+        man->FillNtupleDColumn(tree_idx,1,-999);
+        man->FillNtupleDColumn(tree_idx,2,-999);
+        man->FillNtupleDColumn(tree_idx,3,-999);
+        man->FillNtupleDColumn(tree_idx,4,-999);
+ 
+        man->FillNtupleDColumn(tree_idx,5,-999);
+        man->FillNtupleDColumn(tree_idx,6,-999);
+        man->FillNtupleDColumn(tree_idx,7,-999);
+        man->FillNtupleDColumn(tree_idx,8,-999);
+        
+        man->FillNtupleDColumn(tree_idx,9, -999);
+        man->FillNtupleDColumn(tree_idx,10,-999);
+        man->FillNtupleDColumn(tree_idx,11,-999);
+        man->FillNtupleDColumn(tree_idx,12,-999);
+        
+        man->FillNtupleDColumn(tree_idx,13,-999);
+        man->FillNtupleDColumn(tree_idx,14,-999);
+        man->FillNtupleDColumn(tree_idx,15,-999);
+        man->FillNtupleDColumn(tree_idx,16,-999);
+        
+        man->FillNtupleDColumn(tree_idx,17,-999);
+        man->FillNtupleDColumn(tree_idx,18,-999);
+        man->FillNtupleDColumn(tree_idx,19,-999);
+        man->FillNtupleDColumn(tree_idx,20,-999);
+
+        man->FillNtupleDColumn(tree_idx,21,-999);
+        man->FillNtupleDColumn(tree_idx,22,-999);
+        man->FillNtupleDColumn(tree_idx,23,-999);
+        man->FillNtupleDColumn(tree_idx,24,-999);
     }
 
     for (unsigned int i = 0; i < hc->GetSize(); ++i) {
