@@ -100,9 +100,14 @@ void HepMCG4Interface::HepMC2G4(const std::shared_ptr<HepMC3::GenEvent> hepmcevt
     // std::cout << "Found a vertex! " << vtx_counter << std::endl;
 
     // check world boundary
-    HepMC3::FourVector pos = vertex-> position();
+    HepMC3::FourVector pos = vertex->position();
     G4LorentzVector xvtx(pos.x(), pos.y(), pos.z(), pos.t());
-    if (! CheckVertexInsideWorld(xvtx.vect()*mm)) continue;
+    if (! CheckVertexInsideWorld(xvtx.vect()*mm))
+    { 
+      std::cout << "WARNING: tried to generate vertex outside of world volume!" << std::endl;
+      std::cout << "WARNING: position was (" << pos.x() << ", "<<  pos.y() << ", " << pos.z() << ", " << pos.t() << ")" << std::endl;
+      continue;
+    }
 
     // std::cout << "Vertex inside world " << vtx_counter << std::endl;
 
@@ -110,19 +115,21 @@ void HepMCG4Interface::HepMC2G4(const std::shared_ptr<HepMC3::GenEvent> hepmcevt
     G4PrimaryVertex* g4vtx =
       new G4PrimaryVertex(xvtx.x()*mm, xvtx.y()*mm, xvtx.z()*mm,
                           xvtx.t()*mm/c_light);
+      
+    G4cout << "Placing vertex at (" <<  xvtx.x()*mm << ", " << xvtx.y()*mm << ", " << xvtx.z()*mm << ", " << xvtx.t()*mm/c_light << ")" << G4endl;
 
-      for (const auto& particle : vertex->particles_out())  {
-          if( particle->status() != 1 ) continue;
+    for (const auto& particle : vertex->particles_out())  {
+        if( particle->status() != 1 ) continue;
 
-          G4int pdgcode = particle->pdg_id();
-          pos = particle->momentum();
-          G4LorentzVector p(pos.px(), pos.py(), pos.pz(), pos.e());
-          G4PrimaryParticle* g4prim = new G4PrimaryParticle(pdgcode, p.x()*GeV, p.y()*GeV, p.z()*GeV);
+        G4int pdgcode = particle->pdg_id();
+        pos = particle->momentum();
+        G4LorentzVector p(pos.px(), pos.py(), pos.pz(), pos.e());
+        G4PrimaryParticle* g4prim = new G4PrimaryParticle(pdgcode, p.x()*GeV, p.y()*GeV, p.z()*GeV);
 
-          // std::cout << "Setting primary particle: " << "pdgc = " << pdgcode << std::endl;
+        // std::cout << "Setting primary particle: " << "pdgc = " << pdgcode << std::endl;
 
-          g4vtx->SetPrimary(g4prim);
-      }
+        g4vtx->SetPrimary(g4prim);
+    }
     
     // std::cout << "Setting primary vertex" << std::endl;
 
