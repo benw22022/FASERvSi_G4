@@ -33,14 +33,15 @@
 
 #include <iostream>
 #include <fstream>
+#include <memory>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 HepMCG4AsciiReader::HepMCG4AsciiReader()
   :  filename("xxx.dat"), verbose(0)
 {
-  asciiInput= new HepMC::IO_GenEvent(filename.c_str(), std::ios::in);
+  asciiInput = new HepMC3::ReaderAscii(filename.c_str());
 
-  messenger= new HepMCG4AsciiReaderMessenger(this);
+  messenger = new HepMCG4AsciiReaderMessenger(this);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -55,16 +56,14 @@ void HepMCG4AsciiReader::Initialize()
 {
   delete asciiInput;
 
-  asciiInput= new HepMC::IO_GenEvent(filename.c_str(), std::ios::in);
+  asciiInput = new HepMC3::ReaderAscii(filename);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-HepMC::GenEvent* HepMCG4AsciiReader::GenerateHepMCEvent()
-{
-  HepMC::GenEvent* evt= asciiInput-> read_next_event();
-  if(!evt) return 0; // no more event
-
-  if(verbose>0) evt-> print();
-
+std::shared_ptr<HepMC3::GenEvent> HepMCG4AsciiReader::GenerateHepMCEvent()
+{ 
+  std::shared_ptr<HepMC3::GenEvent> evt = std::make_shared<HepMC3::GenEvent>();
+  asciiInput->read_event(*evt);
+  // HepMC3::Print::content(*evt);
   return evt;
 }

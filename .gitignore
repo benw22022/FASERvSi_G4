@@ -11,3 +11,6 @@
 *.bash_history
 *logfile
 *.vscode
+*.png
+*.svg
+*.jpeg

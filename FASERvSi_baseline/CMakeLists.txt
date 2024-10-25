@@ -24,9 +24,10 @@ endif()
 include(${Geant4_USE_FILE})
 
 #----------------------------------------------------------------------------
-# Find HepMC (required package)
+# Find HepMC3 (required package)
 #
-find_package(HepMC REQUIRED)
+find_package(HepMC3 REQUIRED)
+# find_package(HepMC REQUIRED)
 
 ##----------------------------------------------------------------------------
 ## Find Pythia6 (optional package)
@@ -44,7 +45,7 @@ find_package(HepMC REQUIRED)
 #
 include_directories(${PROJECT_SOURCE_DIR}/include 
                     ${Geant4_INCLUDE_DIR}
-                    ${HEPMC_INCLUDE_DIR})
+                    ${HEPMC3_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
@@ -56,7 +57,7 @@ add_executable(FASERvSi_baseline FASERvSi_baseline.cc ${sources} ${headers})
 #                      ${HEPMC_LIBRARIES} ${HEPMC_FIO_LIBRARIES}
 #                      ${PYTHIA6_LIBRARIES} gfortran)
 target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}
-                      ${HEPMC_LIBRARIES} ${HEPMC_FIO_LIBRARIES}
+                      ${HEPMC3_LIBRARIES} ${HEPMC3_FIO_LIBRARIES} ${HEPMC3_LIB}
                       ${PYTHIA6_LIBRARIES})
 
 # if pythia is compiled with g77, link with -lg2c instead.
