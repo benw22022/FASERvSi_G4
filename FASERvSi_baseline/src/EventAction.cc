@@ -52,55 +52,12 @@ EventAction::EventAction()
    fcalorimeterCollID(-1),
    fmuonCollID(-1)
 {
-  man = G4AnalysisManager::Instance();
-  man->OpenFile("output.root");
-
-  //man->SetFirstNtupleColumnId(1);
   
-  for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
-  {   
-    std::string treeName = "Hits" + std::to_string(i+1);
-    std::cout << "Making tree " << treeName << std::endl;
-
-    man->CreateNtuple(treeName, treeName);
-    man->CreateNtupleIColumn("fEvent");
-    man->CreateNtupleDColumn("ep_x");
-    man->CreateNtupleDColumn("ep_y");
-    man->CreateNtupleDColumn("ep_z");
-    man->CreateNtupleDColumn("ep_E");
-    man->CreateNtupleDColumn("em_x");
-    man->CreateNtupleDColumn("em_y");
-    man->CreateNtupleDColumn("em_z");
-    man->CreateNtupleDColumn("em_E");
-
-    man->CreateNtupleDColumn("mp_x");
-    man->CreateNtupleDColumn("mp_y");
-    man->CreateNtupleDColumn("mp_z");
-    man->CreateNtupleDColumn("mp_E");
-    man->CreateNtupleDColumn("mm_x");
-    man->CreateNtupleDColumn("mm_y");
-    man->CreateNtupleDColumn("mm_z");
-    man->CreateNtupleDColumn("mm_E");
-
-    man->CreateNtupleDColumn("hp_x");
-    man->CreateNtupleDColumn("hp_y");
-    man->CreateNtupleDColumn("hp_z");
-    man->CreateNtupleDColumn("hp_E");
-    man->CreateNtupleDColumn("hm_x");
-    man->CreateNtupleDColumn("hm_y");
-    man->CreateNtupleDColumn("hm_z");
-    man->CreateNtupleDColumn("hm_E");
-
-    man->FinishNtuple();
-  }  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 EventAction::~EventAction()
 {
-  man->Write();
-  man->CloseFile();
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -111,8 +68,10 @@ void EventAction::BeginOfEventAction(const G4Event*)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventAction::EndOfEventAction(const G4Event* evt)
 {
-  
+  G4AnalysisManager* man = G4AnalysisManager::Instance();
+
   G4cout << ">>> Event " << evt->GetEventID() << G4endl;
+  
 
   G4int nPerTree=25;
   
@@ -125,8 +84,9 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   {   
 
     std::string detName = "sensDet" + std::to_string(tree_idx);  
+    // man->FillNtupleIColumn(tree_idx, 0, evt->GetEventID());
     
-    // G4cout << ">>>     Filling ntuple for " << detName << G4endl;
+    G4cout << ">>>     Filling ntuple for " << detName << ">>> Event " << evt->GetEventID() << G4endl;
     
     
     collId = sdManager->GetCollectionID(detName);
@@ -135,110 +95,31 @@ void EventAction::EndOfEventAction(const G4Event* evt)
       G4cout << ">>>     ERROR didn't find " << detName << G4endl;
       return;
     }
-    
-    G4int count_charge=0;
-    G4int count_e=0;
-    G4int count_m=0;
-    G4int count_h=0;
-    G4int charge_e=0;
-    G4int charge_m=0;
-    G4int charge_h=0;
-    
-    
-    man->FillNtupleIColumn(tree_idx,0,evt->GetEventID());
-    
-    if (hc->GetSize() == 0){
-        G4cout << ">>>     WARNING: Empty Hits Collection in " << detName << G4endl;
-        man->FillNtupleDColumn(tree_idx,1,-999);
-        man->FillNtupleDColumn(tree_idx,2,-999);
-        man->FillNtupleDColumn(tree_idx,3,-999);
-        man->FillNtupleDColumn(tree_idx,4,-999);
- 
-        man->FillNtupleDColumn(tree_idx,5,-999);
-        man->FillNtupleDColumn(tree_idx,6,-999);
-        man->FillNtupleDColumn(tree_idx,7,-999);
-        man->FillNtupleDColumn(tree_idx,8,-999);
-        
-        man->FillNtupleDColumn(tree_idx,9, -999);
-        man->FillNtupleDColumn(tree_idx,10,-999);
-        man->FillNtupleDColumn(tree_idx,11,-999);
-        man->FillNtupleDColumn(tree_idx,12,-999);
-        
-        man->FillNtupleDColumn(tree_idx,13,-999);
-        man->FillNtupleDColumn(tree_idx,14,-999);
-        man->FillNtupleDColumn(tree_idx,15,-999);
-        man->FillNtupleDColumn(tree_idx,16,-999);
-        
-        man->FillNtupleDColumn(tree_idx,17,-999);
-        man->FillNtupleDColumn(tree_idx,18,-999);
-        man->FillNtupleDColumn(tree_idx,19,-999);
-        man->FillNtupleDColumn(tree_idx,20,-999);
 
-        man->FillNtupleDColumn(tree_idx,21,-999);
-        man->FillNtupleDColumn(tree_idx,22,-999);
-        man->FillNtupleDColumn(tree_idx,23,-999);
-        man->FillNtupleDColumn(tree_idx,24,-999);
+    man->FillNtupleIColumn(tree_idx,0, evt->GetEventID());
+    
+    if (hc->GetSize() == 0)
+    {
+      G4cout << ">>>     WARNING: Empty Hits Collection in " << detName << G4endl;
+      // man->FillNtupleIColumn(tree_idx, 0, evt->GetEventID());
+      man->FillNtupleDColumn(tree_idx,1,-999);
+      man->FillNtupleDColumn(tree_idx,2,-999);
+      man->FillNtupleDColumn(tree_idx,3,-999);
+      man->FillNtupleDColumn(tree_idx,4,-999);
+      man->FillNtupleDColumn(tree_idx,5,-999);
+      man->AddNtupleRow(tree_idx);
     }
 
-    for (unsigned int i = 0; i < hc->GetSize(); ++i) {
+    for (unsigned int i = 0; i < hc->GetSize(); ++i) 
+    {
       auto hit = static_cast<DetectorHit *>(hc->GetHit(i));
-      // G4cout << "hitX: " << hit->GetX() << G4endl;
-      // G4cout << "hit x: " << hit->GetX() << " y: " << hit->GetY() << " z: " << hit->GetZ() << " E: " << hit->GetEnergy() << " ID: " << hit->GetPDGID() << G4endl;     
       if (hit->GetEnergy() < 1)continue;
-      
-      if (hit->GetPDGID() == -11){
-	man->FillNtupleDColumn(tree_idx,1,hit->GetX());
-	man->FillNtupleDColumn(tree_idx,2,hit->GetY());
-	man->FillNtupleDColumn(tree_idx,3,hit->GetZ());
-	man->FillNtupleDColumn(tree_idx,4,hit->GetEnergy());
-	count_charge-=1;
-	count_e+=1;
-	charge_e-=1;
-      }else if(hit->GetPDGID() == 11){
-	man->FillNtupleDColumn(tree_idx,5,hit->GetX());
-	man->FillNtupleDColumn(tree_idx,6,hit->GetY());
-	man->FillNtupleDColumn(tree_idx,7,hit->GetZ());
-	man->FillNtupleDColumn(tree_idx,8,hit->GetEnergy());
-	count_charge+=1;
-	count_e+=1;
-	charge_e+=1;
-      }else if (hit->GetPDGID() == -13){
-	man->FillNtupleDColumn(tree_idx,9,hit->GetX());
-	man->FillNtupleDColumn(tree_idx,10,hit->GetY());
-	man->FillNtupleDColumn(tree_idx,11,hit->GetZ());
-	man->FillNtupleDColumn(tree_idx,12,hit->GetEnergy());
-	count_charge-=1;
-	count_m+=1;
-	charge_m-=1;
-      }else if(hit->GetPDGID() == 13){
-	man->FillNtupleDColumn(tree_idx,13,hit->GetX());
-	man->FillNtupleDColumn(tree_idx,14,hit->GetY());
-	man->FillNtupleDColumn(tree_idx,15,hit->GetZ());
-	man->FillNtupleDColumn(tree_idx,16,hit->GetEnergy());
-	count_charge+=1;
-	count_m+=1;
-	charge_m+=1;
-      }else if ((hit->GetPDGID() < 0 && hit->GetPDGID() > -6) || hit->GetPDGID() < -25){
-	man->FillNtupleDColumn(tree_idx,17,hit->GetX());
-	man->FillNtupleDColumn(tree_idx,18,hit->GetY());
-	man->FillNtupleDColumn(tree_idx,19,hit->GetZ());
-	man->FillNtupleDColumn(tree_idx,20,hit->GetEnergy());
-	count_charge-=1;
-	count_h+=1;
-	charge_h-=1;
-      }else if ((hit->GetPDGID() > 0 && hit->GetPDGID() < 6) || hit->GetPDGID() > 25){
-	man->FillNtupleDColumn(tree_idx,21,hit->GetX());
-	man->FillNtupleDColumn(tree_idx,22,hit->GetY());
-	man->FillNtupleDColumn(tree_idx,23,hit->GetZ());
-	man->FillNtupleDColumn(tree_idx,24,hit->GetEnergy());
-	count_charge+=1;
-	count_h+=1;
-	charge_h+=1;
-      }
+      man->FillNtupleDColumn(tree_idx,1,hit->GetX());
+      man->FillNtupleDColumn(tree_idx,2,hit->GetY());
+      man->FillNtupleDColumn(tree_idx,3,hit->GetZ());
+      man->FillNtupleDColumn(tree_idx,4,hit->GetEnergy());
+      man->FillNtupleDColumn(tree_idx,5,hit->GetPDGID());
+      man->AddNtupleRow(tree_idx);
     }
-   
-  man->AddNtupleRow(tree_idx);
-    
   }
 }
-

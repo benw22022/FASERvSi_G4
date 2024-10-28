@@ -31,21 +31,62 @@
 #include "G4Run.hh"
 #include "G4RunManager.hh"
 #include "RunAction.hh"
+#include "DetectorParameters.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 RunAction::RunAction()
  : G4UserRunAction()
 {
+  man = G4AnalysisManager::Instance();
+  messenger = new RunActionMessenger(this);
+  foutputFileName = "output.root";
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 RunAction::~RunAction()
 {
+  delete messenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void RunAction::BeginOfRunAction(const G4Run* aRun)
 {
   G4cout << "### Run " << aRun-> GetRunID() << " start." << G4endl;
+  
   G4RunManager::GetRunManager()-> SetRandomNumberStore(true);
+
+  man->OpenFile(foutputFileName);
+  
+  for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
+  {   
+    std::string treeName = "Hits" + std::to_string(i+1);
+    std::cout << "Making tree " << treeName << std::endl;
+
+    man->CreateNtuple(treeName, treeName);
+    man->CreateNtupleIColumn("fEvent");
+    man->CreateNtupleDColumn("x");
+    man->CreateNtupleDColumn("y");
+    man->CreateNtupleDColumn("z");
+    man->CreateNtupleDColumn("E");
+    man->CreateNtupleDColumn("pdgc");
+    man->FinishNtuple();
+  }  
+}
+
+void RunAction::EndOfRunAction(const G4Run*) 
+{
+  man->Write();
+  man->CloseFile();
+}
+
+
+G4String RunAction::GetOutputFileName() const
+{
+  return foutputFileName;
+}
+
+
+void RunAction::SetOutputFileName(G4String fname)
+{
+  foutputFileName = fname;
 }
