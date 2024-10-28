@@ -52,33 +52,12 @@ EventAction::EventAction()
    fcalorimeterCollID(-1),
    fmuonCollID(-1)
 {
-  man = G4AnalysisManager::Instance();
-  man->OpenFile("output.root");
-
-  //man->SetFirstNtupleColumnId(1);
   
-  for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
-  {   
-    std::string treeName = "Hits" + std::to_string(i+1);
-    std::cout << "Making tree " << treeName << std::endl;
-
-    man->CreateNtuple(treeName, treeName);
-    man->CreateNtupleIColumn("fEvent");
-    man->CreateNtupleDColumn("x");
-    man->CreateNtupleDColumn("y");
-    man->CreateNtupleDColumn("z");
-    man->CreateNtupleDColumn("E");
-    man->CreateNtupleDColumn("pdgc");
-    man->FinishNtuple();
-  }  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 EventAction::~EventAction()
 {
-  man->Write();
-  man->CloseFile();
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -89,7 +68,8 @@ void EventAction::BeginOfEventAction(const G4Event*)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventAction::EndOfEventAction(const G4Event* evt)
 {
-  
+  G4AnalysisManager* man = G4AnalysisManager::Instance();
+
   G4cout << ">>> Event " << evt->GetEventID() << G4endl;
   
 
@@ -115,11 +95,13 @@ void EventAction::EndOfEventAction(const G4Event* evt)
       G4cout << ">>>     ERROR didn't find " << detName << G4endl;
       return;
     }
+
+    man->FillNtupleIColumn(tree_idx,0, evt->GetEventID());
     
     if (hc->GetSize() == 0)
     {
       G4cout << ">>>     WARNING: Empty Hits Collection in " << detName << G4endl;
-      man->FillNtupleIColumn(tree_idx, 0, evt->GetEventID());
+      // man->FillNtupleIColumn(tree_idx, 0, evt->GetEventID());
       man->FillNtupleDColumn(tree_idx,1,-999);
       man->FillNtupleDColumn(tree_idx,2,-999);
       man->FillNtupleDColumn(tree_idx,3,-999);
@@ -132,7 +114,6 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     {
       auto hit = static_cast<DetectorHit *>(hc->GetHit(i));
       if (hit->GetEnergy() < 1)continue;
-      man->FillNtupleIColumn(tree_idx,0, evt->GetEventID());
       man->FillNtupleDColumn(tree_idx,1,hit->GetX());
       man->FillNtupleDColumn(tree_idx,2,hit->GetY());
       man->FillNtupleDColumn(tree_idx,3,hit->GetZ());
@@ -142,4 +123,3 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     }
   }
 }
-

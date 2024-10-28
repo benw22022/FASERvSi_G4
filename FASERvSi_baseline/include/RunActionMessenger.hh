@@ -23,31 +23,38 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file eventgenerator/HepMC/HepMCEx01/include/EventAction.hh
-/// \brief Definition of the EventAction class
+/// \file Rungenerator/HepMC/HepMCEx01/include/HepMCG4AsciiReaderMessenger.hh
+/// \brief Definition of the HepMCG4AsciiReaderMessenger class
 //
 //
 
-#ifndef EventAction_h
-#define EventAction_h 1
+#ifndef Run_ACTION_MESSENGER_H
+#define Run_ACTION_MESSENGER_H
 
-#include "G4UserEventAction.hh"
-#include "globals.hh"
-//#include "g4root.hh"
-#include "G4AnalysisManager.hh"
+#include "G4UImessenger.hh"
 
-class EventAction : public G4UserEventAction {
+class RunAction;
+class G4UIdirectory;
+class G4UIcmdWithoutParameter;
+class G4UIcmdWithAString;
+class G4UIcmdWithAnInteger;
+
+class RunActionMessenger : public G4UImessenger {
+
 public:
-  EventAction();
-  ~EventAction();
+  RunActionMessenger(RunAction* evtAct);
+  ~RunActionMessenger();
 
-  virtual void BeginOfEventAction(const G4Event*);
-  virtual void EndOfEventAction(const G4Event*);
-    
+  void SetNewValue(G4UIcommand* command, G4String newValues);
+  G4String GetCurrentValue(G4UIcommand* command);
+
 private:
-  G4int ftrackerCollID;
-  G4int fcalorimeterCollID;
-  G4int fmuonCollID;
+  RunAction* act;
+
+  G4UIdirectory* dir;
+  G4UIcmdWithAnInteger* verbose;
+  G4UIcmdWithAString* open;
+
 };
 
 #endif

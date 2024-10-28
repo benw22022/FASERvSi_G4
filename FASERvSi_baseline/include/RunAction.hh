@@ -35,15 +35,29 @@
 
 #include "G4UserRunAction.hh"
 #include "globals.hh"
+#include "RunActionMessenger.hh"
+#include "G4AnalysisManager.hh"
 
 class G4Run;
 
 class RunAction : public G4UserRunAction {
+
 public:
   RunAction();
   ~RunAction();
 
   virtual void BeginOfRunAction(const G4Run*);
+  virtual void EndOfRunAction(const G4Run*);
+  
+  G4String GetOutputFileName() const;
+  void SetOutputFileName(const G4String fname);
+
+  G4AnalysisManager* man;
+  
+  private:
+    G4String foutputFileName;
+    RunActionMessenger* messenger;
+  
 };
 
 #endif
