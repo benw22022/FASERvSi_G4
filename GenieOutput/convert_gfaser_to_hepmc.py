@@ -23,7 +23,6 @@ def main(input_file, nevents_per_file=None, outputdir=None):
     events = uproot.open(f"{input_file}:gFaser")
     
     nentries = events.num_entries
-    nevents_per_file = nentries
 
     # Work out number of files to make
     print(f"Processing {nentries} events")
@@ -106,10 +105,12 @@ def main(input_file, nevents_per_file=None, outputdir=None):
         writer.write_event(event)
         
         # Check if we need a new file
-        if event_num % nevents_per_file == 0:
+        # print(nevents_per_file, event_num, event_num % nevents_per_file )
+        if event_num % nevents_per_file == 0 and event_num != 0:
             writer.close()
             file_num += 1
             output_file = os.path.basename(input_file).replace(".root", f".part.{file_num}.hepmc")
+            print(f"Done {event_num} events - switching to {output_file}")
             output_file = os.path.join(output_filedir, output_file)
             writer = pyhepmc.io.WriterAscii(output_file)
         
@@ -120,8 +121,8 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help='input file', type=str)
-    parser.add_argument("-n",  "--nfiles", help='number events per file', type=int, default=None)
+    parser.add_argument("-n",  "--nevents", help='number events per file', type=int, default=None)
     parser.add_argument("-o",  "--outputdir", help='output file location', type=str, default=None)
     args = parser.parse_args()
     
-    main(args.input, args.nfiles, args.outputdir)
+    main(args.input, args.nevents, args.outputdir)
