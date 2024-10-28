@@ -3,6 +3,7 @@ import pyhepmc
 import argparse
 import os
 import copy
+import math
 from tqdm import tqdm
 
 # #TODO: Set mother/daughter particles
@@ -16,20 +17,37 @@ from tqdm import tqdm
 #     status = data[""]            
 
 
-def main(input_file):
+def main(input_file, nevents_per_file=None, outputdir=None):
 
     # Open the ROOT file and get the tree
     events = uproot.open(f"{input_file}:gFaser")
     
     nentries = events.num_entries
-    
-    print(f"Processing {nentries} events")
+    nevents_per_file = nentries
 
+    # Work out number of files to make
+    print(f"Processing {nentries} events")
+    if nevents_per_file is None:
+        nevents_per_file = nentries
+    
+    # Make output directory
+    output_filedir = os.getcwd()
+    if outputdir is not None:
+        output_filedir = outputdir
+        os.makedirs(output_filedir,exist_ok=True)
+    
+    
+    # Name output file
+    file_num = 0
+    output_file = os.path.basename(input_file).replace(".root", f".part.{file_num}.hepmc")
+    output_file = os.path.join(output_filedir, output_file)
+    
+    
     # Create a HepMC writer
-    writer = pyhepmc.io.WriterAscii(input_file.replace(".root", ".hepmc"))
+    writer = pyhepmc.io.WriterAscii(output_file)
 
     # Iterate over the entries in the tree
-    for data_dict in tqdm(events.iterate(step_size=1, library="np"), total=nentries):
+    for event_num, data_dict in tqdm(enumerate(events.iterate(step_size=1, library="np")), total=nentries):
         
         data = {}
         for key, value in data_dict.items():   # Just reformat the arrays slightly since they're nested 
@@ -86,6 +104,15 @@ def main(input_file):
 
         event.add_vertex(vertex)
         writer.write_event(event)
+        
+        # Check if we need a new file
+        if event_num % nevents_per_file == 0:
+            writer.close()
+            file_num += 1
+            output_file = os.path.basename(input_file).replace(".root", f".part.{file_num}.hepmc")
+            output_file = os.path.join(output_filedir, output_file)
+            writer = pyhepmc.io.WriterAscii(output_file)
+        
     writer.close()
     
 if __name__ == "__main__":
@@ -93,6 +120,8 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help='input file', type=str)
+    parser.add_argument("-n",  "--nfiles", help='number events per file', type=int, default=None)
+    parser.add_argument("-o",  "--outputdir", help='output file location', type=str, default=None)
     args = parser.parse_args()
     
-    main(args.input)
+    main(args.input, args.nfiles, args.outputdir)
