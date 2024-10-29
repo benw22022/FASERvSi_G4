@@ -14,7 +14,8 @@ DetectorParameters::DetectorParameters()
     fdetHeight = 300*mm;
 
     ftungstenThickness = 0.9*mm;
-    fSCTThickness = 0.5*mm; // 7.08*mm;
+    // fSCTThickness = 0.5*mm; // 7.08*mm;
+    fSCTThickness = 7.08*mm;
 
     fnumSCTLayers = 132;
 

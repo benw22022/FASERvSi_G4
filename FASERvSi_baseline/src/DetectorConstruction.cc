@@ -128,6 +128,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   experimentalHallVisAtt-> SetForceWireframe(true);
   experimentalHall_log->SetVisAttributes(experimentalHallVisAtt);
 
+  G4double delta = 0*mm;
+  G4double pos = DetectorParameters::Get()->ftargetStartPosZ;
+
   // Loop over number of SCT layers assume; assume Tungsten and SCT modules are directly adjacent
   for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
   {   
@@ -137,27 +140,38 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     std::string targetPhysVolName = "Target" + std::to_string(i+1) + "_phys";
 
     G4Box* Target_box = new G4Box("Target_box", DetectorParameters::Get()->fdetWidth/2, DetectorParameters::Get()->fdetHeight/2, DetectorParameters::Get()->ftungstenThickness/2);
-    G4LogicalVolume* Target_log = new G4LogicalVolume(Target_box, fTungsten, "Target_log");
+    G4LogicalVolume* Target_log = new G4LogicalVolume(Target_box, fTungsten, "Target_log"+std::to_string(i+1));
     Target_log->SetVisAttributes(new G4VisAttributes(G4Colour::Blue()));
     
-    G4double targetOffset = DetectorParameters::Get()->ftargetStartPosZ + i * (DetectorParameters::Get()->fSCTThickness + DetectorParameters::Get()->ftungstenThickness);
+    G4double targetOffset = pos; // DetectorParameters::Get()->ftargetStartPosZ + i * (DetectorParameters::Get()->fSCTThickness + DetectorParameters::Get()->ftungstenThickness);
 
     G4VPhysicalVolume * Target_phys = new G4PVPlacement(0, G4ThreeVector(0, 0, targetOffset), Target_log, targetPhysVolName, experimentalHall_log, false, 0);
     
     fTarget_log.push_back(Target_log);
     fTarget_phys.push_back(Target_phys);
-    
+
+    delta =  targetOffset - delta; 
+    std::cout << "Placing tungsten sheet here: " << targetOffset << " delta = " << delta << std::endl;
+    delta = targetOffset;
+
+    pos += DetectorParameters::Get()->ftungstenThickness/2 + DetectorParameters::Get()->fSCTThickness/2;
 
     //------------------------------ Sensitive detectors
     std::string SDLogVolName = "SD" + std::to_string(i+1) + "_log";
     std::string SDPhysVolName = "SD" + std::to_string(i+1) + "_phys";
 
     G4Box* SD_box = new G4Box("SD_box", DetectorParameters::Get()->fdetWidth/2, DetectorParameters::Get()->fdetHeight/2, DetectorParameters::Get()->fSCTThickness/2);
-    G4LogicalVolume* SD_log = new G4LogicalVolume(SD_box, fVacuum, "SD1_log");
+    G4LogicalVolume* SD_log = new G4LogicalVolume(SD_box, fVacuum, "SD_log"+std::to_string(i+1));
     SD_log->SetVisAttributes(new G4VisAttributes(G4Colour::Red()));
     
-    G4double SDOffset = DetectorParameters::Get()->ftargetStartPosZ + DetectorParameters::Get()->ftungstenThickness + i * (DetectorParameters::Get()->fSCTThickness + DetectorParameters::Get()->ftungstenThickness);
+    G4double SDOffset = pos; //DetectorParameters::Get()->ftargetStartPosZ + DetectorParameters::Get()->ftungstenThickness + i * (DetectorParameters::Get()->fSCTThickness + DetectorParameters::Get()->ftungstenThickness);
     G4VPhysicalVolume * SD_phys = new G4PVPlacement(0, G4ThreeVector(0,  0, SDOffset), SD_log, SDPhysVolName, experimentalHall_log, false, 0);
+    pos += DetectorParameters::Get()->ftungstenThickness/2 + DetectorParameters::Get()->fSCTThickness/2;
+
+
+    delta =  SDOffset - delta; 
+    std::cout << "Placing SCT here: " << SDOffset << " delta = " << delta << std::endl;
+    delta = SDOffset;
 
     fSD_log.push_back(SD_log);
     fSD_phys.push_back(SD_phys);
