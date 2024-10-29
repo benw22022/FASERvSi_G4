@@ -43,6 +43,8 @@
 
 #include "DetectorParameters.hh"
 #include <string>
+#include "Randomize.hh"
+
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -79,15 +81,16 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   auto sdManager = G4SDManager::GetSDMpointer();
   G4int collId;
   G4int offset=0;
+
+  // Choose a random number to be the event number
+  G4int eventNumber = static_cast<G4int>(G4UniformRand() * 90000000) + 10000000;
+
   
   for (unsigned int tree_idx{0}; tree_idx < DetectorParameters::Get()->fnumSCTLayers; tree_idx++)
   {   
-
     std::string detName = "sensDet" + std::to_string(tree_idx);  
-    // man->FillNtupleIColumn(tree_idx, 0, evt->GetEventID());
-    
-    G4cout << ">>>     Filling ntuple for " << detName << ">>> Event " << evt->GetEventID() << G4endl;
-    
+    G4cout << ">>>     Filling ntuple for " << detName << ">>> Event " << evt->GetEventID() << "  EventID = " << eventNumber << G4endl;    
+
     
     collId = sdManager->GetCollectionID(detName);
     auto hc = hce->GetHC(collId);
@@ -96,12 +99,10 @@ void EventAction::EndOfEventAction(const G4Event* evt)
       return;
     }
 
-    man->FillNtupleIColumn(tree_idx,0, evt->GetEventID());
-    
     if (hc->GetSize() == 0)
     {
       G4cout << ">>>     WARNING: Empty Hits Collection in " << detName << G4endl;
-      // man->FillNtupleIColumn(tree_idx, 0, evt->GetEventID());
+      man->FillNtupleIColumn(tree_idx,0, eventNumber);
       man->FillNtupleDColumn(tree_idx,1,-999);
       man->FillNtupleDColumn(tree_idx,2,-999);
       man->FillNtupleDColumn(tree_idx,3,-999);
@@ -114,6 +115,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     {
       auto hit = static_cast<DetectorHit *>(hc->GetHit(i));
       if (hit->GetEnergy() < 1)continue;
+      man->FillNtupleIColumn(tree_idx,0, eventNumber);
       man->FillNtupleDColumn(tree_idx,1,hit->GetX());
       man->FillNtupleDColumn(tree_idx,2,hit->GetY());
       man->FillNtupleDColumn(tree_idx,3,hit->GetZ());
