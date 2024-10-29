@@ -1,21 +1,21 @@
+"""
+ROOT -> HEPMC converter
+--------------------------------------------------------------------------------
+Since I already have a GEANT4-HEPMC interface it makes sense to conver the 
+gfaser ROOT Ntuples from GENIE into HEPMC files
+Will split the ROOT file into multiple smaller files, depending on args
+This script converts the gfaser files to hepmc, it takes three arguments:
+
+1) input - the input gfaser file to convert
+2) -n (--nevents) - the number of events to write per file
+3) -o (--output) - a directory to write the output to 
+"""
+
 import uproot
 import pyhepmc
 import argparse
 import os
-import copy
-import math
 from tqdm import tqdm
-
-# #TODO: Set mother/daughter particles
-# def gen_particle_from_idx(data, idx):
-    
-             
-#     px     = data["px"]        
-#     py     = data["py"]        
-#     pz     = data["pz"]        
-#     pdgc   = data["pdgc"]          
-#     status = data[""]            
-
 
 def main(input_file, nevents_per_file=None, outputdir=None):
 
@@ -40,7 +40,6 @@ def main(input_file, nevents_per_file=None, outputdir=None):
     file_num = 0
     output_file = os.path.basename(input_file).replace(".root", f".part.{file_num}.hepmc")
     output_file = os.path.join(output_filedir, output_file)
-    
     
     # Create a HepMC writer
     writer = pyhepmc.io.WriterAscii(output_file)
