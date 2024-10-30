@@ -56,7 +56,20 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
   G4RunManager::GetRunManager()-> SetRandomNumberStore(true);
 
   man->OpenFile(foutputFileName);
-  
+
+  man->CreateNtuple("truth", "truth");
+  man->CreateNtupleIColumn("fEvent");       // 0
+  man->CreateNtupleDColumn("vertex_x");     // 1
+  man->CreateNtupleDColumn("vertex_y");     // 2
+  man->CreateNtupleDColumn("vertex_z");     // 3
+  man->CreateNtupleDColumn("nu_E");         // 4
+  man->CreateNtupleDColumn("nu_px");        // 5
+  man->CreateNtupleDColumn("nu_py");        // 6
+  man->CreateNtupleDColumn("nu_pz");        // 7
+  man->CreateNtupleIColumn("nu_pdgc");      // 8
+  man->CreateNtupleIColumn("target_pdgc");  // 9
+  man->FinishNtuple();
+
   for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
   {   
     std::string treeName = "Hits" + std::to_string(i+1);

@@ -38,6 +38,7 @@
 #include "G4TransportationManager.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+#include "EventInformation.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 HepMCG4Interface::HepMCG4Interface()
@@ -80,19 +81,25 @@ void HepMCG4Interface::HepMC2G4(const std::shared_ptr<HepMC3::GenEvent> hepmcevt
     // real vertex?
     G4bool qvtx=false;
 
+    EventInformation* eventInfo = new EventInformation();
+
     int par_counter{0};
     for (const auto& particle : vertex->particles_in())  {
 
-      // std::cout << "Checking out particle " << par_counter << "  particle->end_vertex() = " << particle->end_vertex() << " particle->status() = " << particle->status() << " PDG code = " << particle->pdg_id() << std::endl;
-      // par_counter++;
-
-      // if (particle->status()==4) std::cout << "Particle status is 4" << std::endl;
-      // if (!particle->end_vertex()) std::cout << "!particle->end_vertex() is true" << std::endl;
-      // if (particle->end_vertex()) std::cout << "!particle->end_vertex() is false" << std::endl;
-
       if (particle->end_vertex() && particle->status()==4) {
         qvtx=true;
-        break;
+        if (EventInformation::isPDGNeutrino(particle->pdg_id()))
+        {
+          eventInfo->SetNeutrinoPDG(particle->pdg_id());
+          HepMC3::FourVector particle_p4 = particle->momentum();
+          G4LorentzVector p4(particle_p4.px(), particle_p4.py(), particle_p4.pz(), particle_p4.e());
+          eventInfo->SetNeutrinoP4(p4);
+        }
+        else //! Assuming only 2-body collision
+        {
+          eventInfo->SetTargetPDG(particle->pdg_id());
+        }
+        // break;
       }
     }
     if (!qvtx) continue;
@@ -108,6 +115,9 @@ void HepMCG4Interface::HepMC2G4(const std::shared_ptr<HepMC3::GenEvent> hepmcevt
       std::cout << "WARNING: position was (" << pos.x() << ", "<<  pos.y() << ", " << pos.z() << ", " << pos.t() << ")" << std::endl;
       continue;
     }
+
+    eventInfo->SetVertexPos(xvtx);
+    g4event->SetUserInformation(eventInfo);
 
     // std::cout << "Vertex inside world " << vtx_counter << std::endl;
 
