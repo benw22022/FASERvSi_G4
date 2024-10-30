@@ -115,8 +115,13 @@ def main(g4exe: str, input_dir: str, output_dir: str) -> None:
     
     if input_dir.endswith(".hepmc"):
         hepmc_files = [input_dir]
+        if not os.path.exists(input_dir):
+            raise ValueError(f"File {input_dir} not found!")
     else:
         hepmc_files = glob.glob(os.path.join(input_dir, "*.hepmc"))
+        
+        if len(hepmc_files) == 0:
+            raise ValueError("No hepmc files found on path!")
     
     g4build_dir = os.path.dirname(g4exe)
     
