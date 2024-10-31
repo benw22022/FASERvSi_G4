@@ -112,22 +112,22 @@ bool EventInformation::isPDGNeutrino(G4int pdgc)
 
 G4double EventInformation::GetNeutrinoPx() const
 {
-    return fnu_p4.px()*GeV;
+    return fnu_p4.px();
 }
 
 G4double EventInformation::GetNeutrinoPy() const
 {
-    return fnu_p4.py()*GeV;
+    return fnu_p4.py();
 }
 
 G4double EventInformation::GetNeutrinoPz() const
 {
-    return fnu_p4.pz()*GeV;
+    return fnu_p4.pz();
 }
 
 G4double EventInformation::GetNeutrinoE() const
 {
-    return fnu_p4.e()*GeV;  
+    return fnu_p4.e();  
 }
 
 G4double EventInformation::GetVertexX() const
@@ -152,4 +152,68 @@ void EventInformation::Print() const
     << "Target: " << ftarget_pdgc << "\n"\
     << "Neutrino: " << fnu_pdgc << " " << fnu_p4 << "\n"\
     << "Vertex: " << fvertex_pos << G4endl;
+}
+
+
+bool EventInformation::isCCInteraction() const
+{
+    return fisCCInteraction;
+}
+
+
+void EventInformation::SetIsCCInteraction(bool isCC)
+{
+    fisCCInteraction = isCC;
+}
+
+
+void EventInformation::SetCCLeptonPDG(G4int pdgc)
+{
+    fCCLepton_pdgc = pdgc;
+}
+
+
+G4int EventInformation::GetCCLeptonPDG()
+{
+    return fCCLepton_pdgc;
+}
+
+
+void EventInformation::SetCCLeptonP4(G4LorentzVector p4)
+{
+    fCCLepton_p4 = p4;
+}
+
+
+G4LorentzVector EventInformation::GetCCLeptonP4()
+{
+    return fCCLepton_p4;
+}
+
+
+G4double EventInformation::GetCCLeptonPx() const
+{   
+    if (!fisCCInteraction) return -999;
+    return fCCLepton_p4.px();
+}
+
+
+G4double EventInformation::GetCCLeptonPy() const
+{   
+    if (!fisCCInteraction) return -999;
+    return fCCLepton_p4.py();
+}
+
+
+G4double EventInformation::GetCCLeptonPz() const
+{   
+    if (!fisCCInteraction) return -999;
+    return fCCLepton_p4.pz();
+}
+
+
+G4double EventInformation::GetCCLeptonE() const
+{   
+    if (!fisCCInteraction) return -999;
+    return fCCLepton_p4.e();
 }

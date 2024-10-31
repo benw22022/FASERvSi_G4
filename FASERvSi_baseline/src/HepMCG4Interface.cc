@@ -117,7 +117,6 @@ void HepMCG4Interface::HepMC2G4(const std::shared_ptr<HepMC3::GenEvent> hepmcevt
     }
 
     eventInfo->SetVertexPos(xvtx);
-    g4event->SetUserInformation(eventInfo);
 
     // std::cout << "Vertex inside world " << vtx_counter << std::endl;
 
@@ -129,20 +128,28 @@ void HepMCG4Interface::HepMC2G4(const std::shared_ptr<HepMC3::GenEvent> hepmcevt
     G4cout << "Placing vertex at (" <<  xvtx.x()*mm << ", " << xvtx.y()*mm << ", " << xvtx.z()*mm << ", " << xvtx.t()*mm/c_light << ")" << G4endl;
 
     for (const auto& particle : vertex->particles_out())  {
-        if( particle->status() != 1 ) continue;
+        if( particle->status() == 1 ||  particle->status() == 5 )
+        {
+          G4int pdgcode = particle->pdg_id();
+          pos = particle->momentum();
+          G4LorentzVector p(pos.px(), pos.py(), pos.pz(), pos.e());
+          G4PrimaryParticle* g4prim = new G4PrimaryParticle(pdgcode, p.x()*GeV, p.y()*GeV, p.z()*GeV);
 
-        G4int pdgcode = particle->pdg_id();
-        pos = particle->momentum();
-        G4LorentzVector p(pos.px(), pos.py(), pos.pz(), pos.e());
-        G4PrimaryParticle* g4prim = new G4PrimaryParticle(pdgcode, p.x()*GeV, p.y()*GeV, p.z()*GeV);
+          // std::cout << "Setting primary particle: " << "pdgc = " << pdgcode << std::endl;
+          g4vtx->SetPrimary(g4prim);
 
-        // std::cout << "Setting primary particle: " << "pdgc = " << pdgcode << std::endl;
-
-        g4vtx->SetPrimary(g4prim);
+          if (particle->status() == 5) //! My special HEPMC code to indicate the leptons from nuCC interactions
+          {
+            eventInfo->SetIsCCInteraction(true);
+            eventInfo->SetCCLeptonPDG(particle->pdg_id());
+            eventInfo->SetCCLeptonP4(p);
+          }
+        }
     }
     
     // std::cout << "Setting primary vertex" << std::endl;
-
+    
+    g4event->SetUserInformation(eventInfo);
     g4event->AddPrimaryVertex(g4vtx);
   }
 }

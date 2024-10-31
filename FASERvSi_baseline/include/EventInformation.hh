@@ -79,6 +79,19 @@ class EventInformation : public G4VUserEventInformation {
     G4double GetVertexY() const;
     G4double GetVertexZ() const;
 
+    bool isCCInteraction() const;
+    void SetIsCCInteraction(bool isCC);
+
+    void SetCCLeptonPDG(G4int pdgc);
+    G4int GetCCLeptonPDG();
+    void SetCCLeptonP4(G4LorentzVector p4);
+    G4LorentzVector GetCCLeptonP4();
+
+    G4double GetCCLeptonPx() const;
+    G4double GetCCLeptonPy() const;
+    G4double GetCCLeptonPz() const;
+    G4double GetCCLeptonE() const;
+
     void Print() const override;
 
   private:
@@ -86,6 +99,9 @@ class EventInformation : public G4VUserEventInformation {
     G4int ftarget_pdgc;
     G4LorentzVector fvertex_pos;
     G4LorentzVector fnu_p4;
+    G4LorentzVector fCCLepton_p4{0,0,0,0};
+    G4int fCCLepton_pdgc{-999};
+    bool fisCCInteraction{0};
 
 };
 

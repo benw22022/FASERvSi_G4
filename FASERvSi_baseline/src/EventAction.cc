@@ -89,28 +89,35 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   // Fill truth tree
   EventInformation* eventInfo = static_cast<EventInformation*>(evt->GetUserInformation());
 
-  man->FillNtupleIColumn(0, 0, eventNumber);
-  man->FillNtupleDColumn(0, 1, eventInfo->GetVertexX());
-  man->FillNtupleDColumn(0, 2, eventInfo->GetVertexY());
-  man->FillNtupleDColumn(0, 3, eventInfo->GetVertexZ());
-  man->FillNtupleDColumn(0, 4, eventInfo->GetNeutrinoE());
-  man->FillNtupleDColumn(0, 5, eventInfo->GetNeutrinoPx());
-  man->FillNtupleDColumn(0, 6, eventInfo->GetNeutrinoPy());
-  man->FillNtupleDColumn(0, 7, eventInfo->GetNeutrinoPz());
-  man->FillNtupleIColumn(0, 8, eventInfo->GetNeutrinoPDG());
-  man->FillNtupleIColumn(0, 9, eventInfo->GetTargetPDG());
+  man->FillNtupleIColumn(0, 0,  eventNumber);
+  man->FillNtupleDColumn(0, 1,  eventInfo->GetVertexX());
+  man->FillNtupleDColumn(0, 2,  eventInfo->GetVertexY());
+  man->FillNtupleDColumn(0, 3,  eventInfo->GetVertexZ());
+  man->FillNtupleDColumn(0, 4,  eventInfo->GetNeutrinoE());
+  man->FillNtupleDColumn(0, 5,  eventInfo->GetNeutrinoPx());
+  man->FillNtupleDColumn(0, 6,  eventInfo->GetNeutrinoPy());
+  man->FillNtupleDColumn(0, 7,  eventInfo->GetNeutrinoPz());
+  man->FillNtupleIColumn(0, 8,  eventInfo->GetNeutrinoPDG());
+  man->FillNtupleIColumn(0, 9,  eventInfo->GetTargetPDG());
+  man->FillNtupleIColumn(0, 10, eventInfo->isCCInteraction());
+  man->FillNtupleIColumn(0, 11, eventInfo->GetCCLeptonPDG());
+  man->FillNtupleDColumn(0, 12, eventInfo->GetCCLeptonE());
+  man->FillNtupleDColumn(0, 13, eventInfo->GetCCLeptonPx());
+  man->FillNtupleDColumn(0, 14, eventInfo->GetCCLeptonPy());
+  man->FillNtupleDColumn(0, 15, eventInfo->GetCCLeptonPz());
   man->AddNtupleRow(0);
 
   G4cout << "EventInformation: " << \
   eventNumber << ", " <<\
-  eventInfo->GetVertexX() << ", " << \
-  eventInfo->GetVertexY() << ", " << \
-  eventInfo->GetVertexZ() << ", " << \
-  eventInfo->GetNeutrinoE() << ", " << \
-  eventInfo->GetNeutrinoPx() << ", " << \
-  eventInfo->GetNeutrinoPy() << ", " <<\
-  eventInfo->GetNeutrinoPz() << ", " <<\
-  eventInfo->GetTargetPDG() << G4endl;
+  "vx = " << eventInfo->GetVertexX() << " mm, " << \
+  "vy = " << eventInfo->GetVertexY() << " mm, " << \
+  "vz = " << eventInfo->GetVertexZ() << " mm, " << \
+  "nuE = " << eventInfo->GetNeutrinoE() << " GeV, " << \
+  "nuPx = " << eventInfo->GetNeutrinoPx() << " GeV, " << \
+  "nuPy = " << eventInfo->GetNeutrinoPy() << " GeV, " <<\
+  "nuPz = " << eventInfo->GetNeutrinoPz() << " GeV, " <<\
+  "nu pdgc" << eventInfo->GetNeutrinoPDG() << ", " <<\
+  "target pdgc" << eventInfo->GetTargetPDG() << G4endl;
   
   // Fill Hits trees
   for (unsigned int det_idx{0}; det_idx < DetectorParameters::Get()->fnumSCTLayers; det_idx++)
