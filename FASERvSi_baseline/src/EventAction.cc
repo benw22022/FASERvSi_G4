@@ -44,6 +44,7 @@
 #include "DetectorParameters.hh"
 #include <string>
 #include "Randomize.hh"
+#include "EventInformation.hh"
 
 
 
@@ -85,11 +86,45 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   // Choose a random number to be the event number
   G4int eventNumber = static_cast<G4int>(G4UniformRand() * 90000000) + 10000000;
 
+  // Fill truth tree
+  EventInformation* eventInfo = static_cast<EventInformation*>(evt->GetUserInformation());
+
+  man->FillNtupleIColumn(0, 0,  eventNumber);
+  man->FillNtupleDColumn(0, 1,  eventInfo->GetVertexX());
+  man->FillNtupleDColumn(0, 2,  eventInfo->GetVertexY());
+  man->FillNtupleDColumn(0, 3,  eventInfo->GetVertexZ());
+  man->FillNtupleDColumn(0, 4,  eventInfo->GetNeutrinoE());
+  man->FillNtupleDColumn(0, 5,  eventInfo->GetNeutrinoPx());
+  man->FillNtupleDColumn(0, 6,  eventInfo->GetNeutrinoPy());
+  man->FillNtupleDColumn(0, 7,  eventInfo->GetNeutrinoPz());
+  man->FillNtupleIColumn(0, 8,  eventInfo->GetNeutrinoPDG());
+  man->FillNtupleIColumn(0, 9,  eventInfo->GetTargetPDG());
+  man->FillNtupleIColumn(0, 10, eventInfo->isCCInteraction());
+  man->FillNtupleIColumn(0, 11, eventInfo->GetCCLeptonPDG());
+  man->FillNtupleDColumn(0, 12, eventInfo->GetCCLeptonE());
+  man->FillNtupleDColumn(0, 13, eventInfo->GetCCLeptonPx());
+  man->FillNtupleDColumn(0, 14, eventInfo->GetCCLeptonPy());
+  man->FillNtupleDColumn(0, 15, eventInfo->GetCCLeptonPz());
+  man->AddNtupleRow(0);
+
+  G4cout << "EventInformation: " << \
+  eventNumber << ", " <<\
+  "vx = " << eventInfo->GetVertexX() << " mm, " << \
+  "vy = " << eventInfo->GetVertexY() << " mm, " << \
+  "vz = " << eventInfo->GetVertexZ() << " mm, " << \
+  "nuE = " << eventInfo->GetNeutrinoE() << " GeV, " << \
+  "nuPx = " << eventInfo->GetNeutrinoPx() << " GeV, " << \
+  "nuPy = " << eventInfo->GetNeutrinoPy() << " GeV, " <<\
+  "nuPz = " << eventInfo->GetNeutrinoPz() << " GeV, " <<\
+  "nu pdgc" << eventInfo->GetNeutrinoPDG() << ", " <<\
+  "target pdgc" << eventInfo->GetTargetPDG() << G4endl;
   
-  for (unsigned int tree_idx{0}; tree_idx < DetectorParameters::Get()->fnumSCTLayers; tree_idx++)
+  // Fill Hits trees
+  for (unsigned int det_idx{0}; det_idx < DetectorParameters::Get()->fnumSCTLayers; det_idx++)
   {   
-    std::string detName = "sensDet" + std::to_string(tree_idx);  
-    G4cout << ">>>     Filling ntuple for " << detName << ">>> Event " << evt->GetEventID() << "  EventID = " << eventNumber << G4endl;    
+    G4int tree_idx = det_idx + 1; // Need to offset by one since tree `0` is the `truth` tree
+    std::string detName = "sensDet" + std::to_string(det_idx);  
+    G4cout << ">>>     Filling ntuple for " << detName << " >>> Event " << evt->GetEventID() << "  EventID = " << eventNumber << G4endl;    
 
     
     collId = sdManager->GetCollectionID(detName);
