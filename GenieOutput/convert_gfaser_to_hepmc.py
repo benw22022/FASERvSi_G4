@@ -73,6 +73,7 @@ def main(input_file, nevents_per_file=None, outputdir=None):
 
         # Make list of particles
         list_of_particles = []
+        nccl = 0
         for i in range(len(px)):
             
             genie_status = status[i]
@@ -80,18 +81,28 @@ def main(input_file, nevents_per_file=None, outputdir=None):
                 hepmc_status = 4
             elif (genie_status == 1): # stable final particle
                 hepmc_status = 1
+                
+                if abs(pdgc[first_mother[i]]) in [12, 14, 16] and abs(pdgc[i]) in [11, 13, 15]:
+                    # print(f"In event {event_num} - Mother pdgc - {pdgc[first_mother[i]]} lepton pdgc = {pdgc[i]}  setting hepmc status to 5!")
+                    hepmc_status = 5 #! My special hack to flag the charged lepton from nuCC events
+                    nccl += 1
             elif (genie_status == 3): # decayed particle
                 hepmc_status = 2
             else:                     # catch-all informational particle
                 hepmc_status = 3
+            
+            
             
             mom = pyhepmc.FourVector(px[i], py[i], pz[i], E[i])      
             particle = pyhepmc.GenParticle(mom, int(pdgc[i]), hepmc_status)   
             particle.generated_mass = M[i]
 
             list_of_particles.append(particle)
-         
-         # Add particles to vertex
+        
+        if nccl > 1:
+            print("WARING: Neutrino produced more than one charged lepton??")
+        
+        # Add particles to vertex
         for i, particle in enumerate(list_of_particles):
             if (particle.status == 4):
                 vertex.add_particle_in(particle)
@@ -99,6 +110,7 @@ def main(input_file, nevents_per_file=None, outputdir=None):
                 #! Work out mother/daughter assignment  - CAN'T DO!
                 # particle.set_parent(list_of_particles[first_mother[i]]) 
                 vertex.add_particle_out(particle)    
+                
 
         event.add_vertex(vertex)
         writer.write_event(event)
