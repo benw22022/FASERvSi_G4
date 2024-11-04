@@ -143,12 +143,26 @@ void EventAction::EndOfEventAction(const G4Event* evt)
       man->FillNtupleDColumn(tree_idx,3,-999);
       man->FillNtupleDColumn(tree_idx,4,-999);
       man->FillNtupleDColumn(tree_idx,5,-999);
+      man->FillNtupleDColumn(tree_idx,6, -999);
+      man->FillNtupleDColumn(tree_idx,7, -999);
+      man->FillNtupleDColumn(tree_idx,8, -999);
+      man->FillNtupleDColumn(tree_idx,9, -999);
+      man->FillNtupleDColumn(tree_idx,10,-999);
+      man->FillNtupleDColumn(tree_idx,11,-999);
       man->AddNtupleRow(tree_idx);
     }
 
     for (unsigned int i = 0; i < hc->GetSize(); ++i) 
     {
       auto hit = static_cast<DetectorHit *>(hc->GetHit(i));
+
+      double pre_x  = hit->GetPreStepPosition().x();
+      double pre_y  = hit->GetPreStepPosition().y();
+      double pre_z  = hit->GetPreStepPosition().z();
+      double post_x = hit->GetPostStepPosition().x();
+      double post_y = hit->GetPostStepPosition().y();
+      double post_z = hit->GetPostStepPosition().z();
+
       if (hit->GetEnergy() < 1)continue;
       man->FillNtupleIColumn(tree_idx,0, eventNumber);
       man->FillNtupleDColumn(tree_idx,1,hit->GetX());
@@ -156,6 +170,12 @@ void EventAction::EndOfEventAction(const G4Event* evt)
       man->FillNtupleDColumn(tree_idx,3,hit->GetZ());
       man->FillNtupleDColumn(tree_idx,4,hit->GetEnergy());
       man->FillNtupleDColumn(tree_idx,5,hit->GetPDGID());
+      man->FillNtupleDColumn(tree_idx,6, hit->GetPreStepPosition().x());
+      man->FillNtupleDColumn(tree_idx,7, hit->GetPreStepPosition().y());
+      man->FillNtupleDColumn(tree_idx,8, hit->GetPreStepPosition().z());
+      man->FillNtupleDColumn(tree_idx,9, hit->GetPostStepPosition().x());
+      man->FillNtupleDColumn(tree_idx,10, hit->GetPostStepPosition().y());
+      man->FillNtupleDColumn(tree_idx,11, hit->GetPostStepPosition().z());
       man->AddNtupleRow(tree_idx);
     }
   }

@@ -4,6 +4,7 @@
 #include "G4THitsCollection.hh"
 #include "G4VHit.hh"
 #include "G4Types.hh"
+#include "G4ThreeVector.hh"
 
 #include <vector>
 
@@ -41,6 +42,11 @@ public:
   /// Get hit Energy
   inline G4double GetEnergy() const { return fEnergy; }
 
+  void SetPreStepPosition(G4ThreeVector& PreStepPosition) { fPreStepPosition = PreStepPosition; }
+  void SetPostStepPosition(G4ThreeVector& PostStepPosition) { fPostStepPosition = PostStepPosition; }
+
+  G4ThreeVector GetPreStepPosition() const { return  fPreStepPosition; }
+  G4ThreeVector GetPostStepPosition() const { return fPostStepPosition; }
 
 private:
   /// Position along x axis
@@ -53,6 +59,9 @@ private:
   G4int fPDGID = -999;
   /// Energy
   G4double fEnergy = -999.;
+
+  G4ThreeVector fPreStepPosition;
+  G4ThreeVector fPostStepPosition;
 
 };
 

@@ -82,12 +82,18 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
     std::cout << "Making tree " << treeName << std::endl;
 
     man->CreateNtuple(treeName, treeName);
-    man->CreateNtupleIColumn("fEvent");
-    man->CreateNtupleDColumn("x");
-    man->CreateNtupleDColumn("y");
-    man->CreateNtupleDColumn("z");
-    man->CreateNtupleDColumn("E");
-    man->CreateNtupleDColumn("pdgc");
+    man->CreateNtupleIColumn("fEvent");         // 0           
+    man->CreateNtupleDColumn("x");              // 1      
+    man->CreateNtupleDColumn("y");              // 2      
+    man->CreateNtupleDColumn("z");              // 3      
+    man->CreateNtupleDColumn("E");              // 4      
+    man->CreateNtupleDColumn("pdgc");           // 5         
+    man->CreateNtupleDColumn("prestep_x");      // 6        
+    man->CreateNtupleDColumn("prestep_y");      // 7         
+    man->CreateNtupleDColumn("prestep_z");      // 8     
+    man->CreateNtupleDColumn("poststep_x");     // 9         
+    man->CreateNtupleDColumn("poststep_y");     // 10        
+    man->CreateNtupleDColumn("poststep_z");     // 11            
     man->FinishNtuple();
   }  
 }

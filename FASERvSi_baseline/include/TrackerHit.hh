@@ -56,9 +56,17 @@ public:
   inline void SetPos(G4ThreeVector xyz) { fPos = xyz; }
   inline G4ThreeVector GetPos() { return fPos; }
 
+  void SetPreStepPosition(G4ThreeVector& PreStepPosition) { fPreStepPosition = PreStepPosition; }
+  void SetPostStepPosition(G4ThreeVector& PostStepPosition) { fPostStepPosition = PostStepPosition; }
+
+  G4ThreeVector GetPreStepPosition() const { return  fPreStepPosition; }
+  G4ThreeVector GetPostStepPosition() const { return fPostStepPosition; }
+
 private:
   G4double fEdep;
   G4ThreeVector fPos;
+  G4ThreeVector fPreStepPosition;
+  G4ThreeVector fPostStepPosition;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

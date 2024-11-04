@@ -63,8 +63,17 @@ G4bool TrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   if(edep==0.) return false;
 
   TrackerHit* newHit = new TrackerHit();
+
+  G4StepPoint* PreStep          = aStep->GetPreStepPoint();
+  G4ThreeVector PreStepPosition = PreStep->GetPosition();
+
+  G4StepPoint* PostStep         = aStep->GetPostStepPoint();
+  G4ThreeVector PostStepPosition= PostStep->GetPosition();
+
   newHit->SetEdep( edep );
   newHit->SetPos( aStep->GetPreStepPoint()->GetPosition() );
+  newHit->SetPostStepPosition(PostStepPosition);
+  newHit->SetPreStepPosition(PreStepPosition);
   fTrackerCollection->insert( newHit );
 
   return true;
