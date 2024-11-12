@@ -37,6 +37,8 @@
 #include "globals.hh"
 #include "RunActionMessenger.hh"
 #include "G4AnalysisManager.hh"
+#include <map>
+
 
 class G4Run;
 
@@ -53,11 +55,21 @@ public:
   void SetOutputFileName(const G4String fname);
 
   G4AnalysisManager* man;
-  
+
+  void FillHitsRow(G4double x, G4double y, G4double z, G4double E, G4int pdgc, G4int layernum);
+  void ClearHits();
+
   private:
     G4String foutputFileName;
     RunActionMessenger* messenger;
-  
+
+    mutable std::vector<G4double> m_hits_x;
+    mutable std::vector<G4double> m_hits_y;
+    mutable std::vector<G4double> m_hits_z;
+    mutable std::vector<G4double> m_hits_E;
+    mutable std::vector<G4int>   m_hits_pdgc;
+    mutable std::vector<G4int>   m_hits_layernum;
+
 };
 
 #endif

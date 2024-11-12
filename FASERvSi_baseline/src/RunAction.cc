@@ -57,7 +57,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
 
   man->OpenFile(foutputFileName);
 
-  man->CreateNtuple("truth", "truth");
+  man->CreateNtuple("Hits", "Hits");
   man->CreateNtupleIColumn("fEvent");           // 0
   man->CreateNtupleDColumn("vertex_x");         // 1
   man->CreateNtupleDColumn("vertex_y");         // 2
@@ -74,22 +74,13 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
   man->CreateNtupleDColumn("cclepton_px");      // 13
   man->CreateNtupleDColumn("cclepton_py");      // 14
   man->CreateNtupleDColumn("cclepton_pz");      // 15
-  man->FinishNtuple();
-
-  for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
-  {   
-    std::string treeName = "Hits" + std::to_string(i+1);
-    std::cout << "Making tree " << treeName << std::endl;
-
-    man->CreateNtuple(treeName, treeName);
-    man->CreateNtupleIColumn("fEvent");
-    man->CreateNtupleDColumn("x");
-    man->CreateNtupleDColumn("y");
-    man->CreateNtupleDColumn("z");
-    man->CreateNtupleDColumn("E");
-    man->CreateNtupleDColumn("pdgc");
-    man->FinishNtuple();
-  }  
+  man->CreateNtupleDColumn("x",    m_hits_x);
+  man->CreateNtupleDColumn("y",    m_hits_y);
+  man->CreateNtupleDColumn("z",    m_hits_z);
+  man->CreateNtupleDColumn("E",    m_hits_E);
+  man->CreateNtupleIColumn("pdgc", m_hits_pdgc);
+  man->CreateNtupleIColumn("layer", m_hits_layernum);
+  man->FinishNtuple();  
 }
 
 void RunAction::EndOfRunAction(const G4Run*) 
@@ -108,4 +99,26 @@ G4String RunAction::GetOutputFileName() const
 void RunAction::SetOutputFileName(G4String fname)
 {
   foutputFileName = fname;
+}
+
+
+void RunAction::FillHitsRow(G4double x, G4double y, G4double z, G4double E, G4int pdgc, G4int layernum)
+{
+  m_hits_x.push_back(x);
+  m_hits_y.push_back(y);
+  m_hits_z.push_back(z);
+  m_hits_E.push_back(E);
+  m_hits_pdgc.push_back(pdgc);
+  m_hits_layernum.push_back(layernum);
+}
+
+
+void RunAction::ClearHits()
+{
+  m_hits_x.clear();
+  m_hits_y.clear();
+  m_hits_z.clear();
+  m_hits_E.clear();
+  m_hits_pdgc.clear();
+  m_hits_layernum.clear();
 }

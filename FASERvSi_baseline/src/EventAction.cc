@@ -39,14 +39,14 @@
 #include "EventAction.hh"
 #include "DetectorHit.hh"
 #include "MuonHit.hh"
-#include "TrackerHit.hh"
-
+#include "TrackerHit.hh"  
 #include "DetectorParameters.hh"
 #include <string>
 #include "Randomize.hh"
 #include "EventInformation.hh"
+#include "RunAction.hh"
 
-
+class RunAction;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 EventAction::EventAction()
@@ -71,12 +71,16 @@ void EventAction::BeginOfEventAction(const G4Event*)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventAction::EndOfEventAction(const G4Event* evt)
 {
+  // Get analysis manager
   G4AnalysisManager* man = G4AnalysisManager::Instance();
 
-  G4cout << ">>> Event " << evt->GetEventID() << G4endl;
+  // Get run action so that we can modify the vector data
+  const G4UserRunAction* userRunAction = G4RunManager::GetRunManager()->GetUserRunAction();
+  RunAction* runAction = const_cast<RunAction*>(static_cast<const RunAction*>(userRunAction));
+  runAction->ClearHits();
   
 
-  G4int nPerTree=25;
+  G4cout << ">>> Event " << evt->GetEventID() << G4endl;
   
   auto hce = evt->GetHCofThisEvent();
   auto sdManager = G4SDManager::GetSDMpointer();
@@ -105,7 +109,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   man->FillNtupleDColumn(0, 13, eventInfo->GetCCLeptonPx());
   man->FillNtupleDColumn(0, 14, eventInfo->GetCCLeptonPy());
   man->FillNtupleDColumn(0, 15, eventInfo->GetCCLeptonPz());
-  man->AddNtupleRow(0);
+  // man->AddNtupleRow(0);
 
   G4cout << "EventInformation: " << \
   eventNumber << ", " <<\
@@ -124,39 +128,23 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   {   
     G4int tree_idx = det_idx + 1; // Need to offset by one since tree `0` is the `truth` tree
     std::string detName = "sensDet" + std::to_string(det_idx);  
-    G4cout << ">>>     Filling ntuple for " << detName << " >>> Event " << evt->GetEventID() << "  EventID = " << eventNumber << G4endl;    
+    G4cout << ">>>     Filling ntuple for " << detName << " >>> Event " << evt->GetEventID() << "  EventID = " << eventNumber << G4endl;
 
-    
     collId = sdManager->GetCollectionID(detName);
     auto hc = hce->GetHC(collId);
     if (!hc){
       G4cout << ">>>     ERROR didn't find " << detName << G4endl;
-      return;
+      continue;
     }
 
-    if (hc->GetSize() == 0)
-    {
-      G4cout << ">>>     WARNING: Empty Hits Collection in " << detName << G4endl;
-      man->FillNtupleIColumn(tree_idx,0, eventNumber);
-      man->FillNtupleDColumn(tree_idx,1,-999);
-      man->FillNtupleDColumn(tree_idx,2,-999);
-      man->FillNtupleDColumn(tree_idx,3,-999);
-      man->FillNtupleDColumn(tree_idx,4,-999);
-      man->FillNtupleDColumn(tree_idx,5,-999);
-      man->AddNtupleRow(tree_idx);
-    }
+    // if (hc->GetSize() == 0) { G4cout << ">>>     WARNING: Empty Hits Collection in " << detName << G4endl; }
 
     for (unsigned int i = 0; i < hc->GetSize(); ++i) 
     {
       auto hit = static_cast<DetectorHit *>(hc->GetHit(i));
-      if (hit->GetEnergy() < 1)continue;
-      man->FillNtupleIColumn(tree_idx,0, eventNumber);
-      man->FillNtupleDColumn(tree_idx,1,hit->GetX());
-      man->FillNtupleDColumn(tree_idx,2,hit->GetY());
-      man->FillNtupleDColumn(tree_idx,3,hit->GetZ());
-      man->FillNtupleDColumn(tree_idx,4,hit->GetEnergy());
-      man->FillNtupleDColumn(tree_idx,5,hit->GetPDGID());
-      man->AddNtupleRow(tree_idx);
+      if (hit->GetEnergy() < 1) continue;
+      runAction->FillHitsRow(hit->GetX(), hit->GetY(), hit->GetZ(), hit->GetEnergy(), hit->GetPDGID(), det_idx+1);
     }
   }
+  man->AddNtupleRow(0);
 }
