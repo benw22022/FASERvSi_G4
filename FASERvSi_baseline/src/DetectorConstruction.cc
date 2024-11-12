@@ -59,6 +59,14 @@
 #include <string>
 #include <fstream>
 
+void checkOverlaps(G4VPhysicalVolume* physvol)
+{
+  if (physvol->CheckOverlaps())
+  {
+    std::string message = "Overlap detected in " + physvol->GetName();
+    G4Exception("G4PVPlacement::CheckOverlaps()", physvol->GetName(), RunMustBeAborted, message.c_str());
+  }
+}
 
 
 
@@ -122,7 +130,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4Box* experimentalHall_box = new G4Box("expHall_b", DetectorParameters::Get()->fexpHall_x/2, DetectorParameters::Get()->fexpHall_y/2, DetectorParameters::Get()->fexpHall_z/2);
   G4LogicalVolume* experimentalHall_log = new G4LogicalVolume(experimentalHall_box, fVacuum,"expHall_L", 0,0,0);
   
-  G4VPhysicalVolume * experimentalHall_phys = new G4PVPlacement(0, G4ThreeVector(), experimentalHall_log, "expHall_P", 0, false,0);
+  G4VPhysicalVolume* experimentalHall_phys = new G4PVPlacement(0, G4ThreeVector(), experimentalHall_log, "expHall_P", 0, false,0);
   G4VisAttributes* experimentalHallVisAtt = new G4VisAttributes(G4Colour(1.,1.,1.));
 
   experimentalHallVisAtt-> SetForceWireframe(true);
@@ -146,6 +154,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4double targetOffset = pos; // DetectorParameters::Get()->ftargetStartPosZ + i * (DetectorParameters::Get()->fSCTThickness + DetectorParameters::Get()->ftungstenThickness);
 
     G4VPhysicalVolume * Target_phys = new G4PVPlacement(0, G4ThreeVector(0, 0, targetOffset), Target_log, targetPhysVolName, experimentalHall_log, false, 0);
+    checkOverlaps(Target_phys);
     
     fTarget_log.push_back(Target_log);
     fTarget_phys.push_back(Target_phys);
@@ -167,7 +176,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4double SDOffset = pos; //DetectorParameters::Get()->ftargetStartPosZ + DetectorParameters::Get()->ftungstenThickness + i * (DetectorParameters::Get()->fSCTThickness + DetectorParameters::Get()->ftungstenThickness);
     G4VPhysicalVolume * SD_phys = new G4PVPlacement(0, G4ThreeVector(0,  0, SDOffset), SD_log, SDPhysVolName, experimentalHall_log, false, 0);
     pos += DetectorParameters::Get()->ftungstenThickness/2 + DetectorParameters::Get()->fSCTThickness/2;
-
+    checkOverlaps(SD_phys);
 
     delta =  SDOffset - delta; 
     std::cout << "Placing SCT here: " << SDOffset << " delta = " << delta << std::endl;
