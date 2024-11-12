@@ -143,8 +143,10 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     {
       auto hit = static_cast<DetectorHit *>(hc->GetHit(i));
       if (hit->GetEnergy() < 1) continue;
-      runAction->FillHitsRow(hit->GetX(), hit->GetY(), hit->GetZ(), hit->GetEnergy(), hit->GetPDGID(), det_idx+1);
+      runAction->FillHitsRow(hit->GetX(), hit->GetY(), hit->GetZ(), hit->GetEnergy(), hit->GetPDGID(), hit->GetCharge(), det_idx+1);
     }
   }
+  G4int nMergedHits = runAction->MergeHits(17e-3, 580e-3); //TODO Don't hard code this!
+  std::cout << "Merged " << nMergedHits << " hits" << std::endl;
   man->AddNtupleRow(0);
 }

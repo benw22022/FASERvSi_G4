@@ -30,6 +30,10 @@ public:
     fEnergy = E;
   }
 
+  inline void SetCharge(G4double charge){
+    fCharge = charge;
+  }
+
   /// Get hit X position
   inline G4double GetX() const { return fPosX; }
   /// Get hit Y position
@@ -40,6 +44,8 @@ public:
   inline G4double GetPDGID() const { return fPDGID; }
   /// Get hit Energy
   inline G4double GetEnergy() const { return fEnergy; }
+  /// Get hit Charge
+  inline G4double GetCharge() const { return fCharge; }
 
 
 private:
@@ -53,7 +59,8 @@ private:
   G4int fPDGID = -999;
   /// Energy
   G4double fEnergy = -999.;
-
+  // Charge
+  G4double fCharge;
 };
 
 typedef G4THitsCollection<DetectorHit> DetectorHitCollection;
