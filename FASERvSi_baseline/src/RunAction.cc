@@ -134,15 +134,18 @@ std::set<G4int> RunAction::FindHitsToMerge(G4double xtol, G4double ytol) const
 {
   std::set<G4int> hits_to_be_merged = std::set<G4int>();
 
-  if (m_hits_x.size() < 2) return hits_to_be_merged;
+  if (m_hits_x.size() < 2) return hits_to_be_merged; 
 
   for (unsigned int i{0}; i < m_hits_x.size(); i++)
   {
     bool can_break{false};
+    
+    if (m_hits_charge.at(i) == 0){ continue; } // Hits must be charged for merging 
+
     for (unsigned int j{i+1}; j < m_hits_x.size(); j++)
     {
   
-      if (m_hits_charge.at(i) == 0 || m_hits_charge.at(j) == 0){ continue; } // Hits must be charged for merging 
+      if (m_hits_charge.at(j) == 0){ continue; } // Hits must be charged for merging 
       
       G4double x_dist = abs(m_hits_x.at(i) - m_hits_x.at(j));
       G4double y_dist = abs(m_hits_y.at(i) - m_hits_y.at(j));
