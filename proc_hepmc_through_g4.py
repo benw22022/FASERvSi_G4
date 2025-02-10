@@ -19,6 +19,7 @@ import argparse
 import sys
 import pyhepmc
 import multiprocessing
+from multiprocessing import Pool, Queue, Manager
 
 
 def get_number_of_events_in_hepmc(hepmc_file: str) -> int:
@@ -100,6 +101,9 @@ def process_one_file(g4exe: str, input_file: str, output_dir: str, nevents: int,
     else:
         output_queue.put((input_file, False))
         
+def worker(hepmc, g4exe, output_dir, output_queue): 
+    nevents_in_file = get_number_of_events_in_hepmc(hepmc) 
+    process_one_file(g4exe, hepmc, output_dir, nevents_in_file, output_queue)
 
 def main(g4exe: str, input_dir: str, output_dir: str) -> None:
     """
@@ -129,31 +133,52 @@ def main(g4exe: str, input_dir: str, output_dir: str) -> None:
     os.chdir(g4build_dir)
     os.makedirs("logs", exist_ok=True)
     
-    jobs = []
-    output_queue = multiprocessing.Queue() #TODO: Make number of CPU cores used configurable
-    for hepmc in hepmc_files:
-        
-        nevents_in_file = get_number_of_events_in_hepmc(hepmc)
-        
-        p = multiprocessing.Process(target=process_one_file, args=(g4exe, hepmc, output_dir, nevents_in_file, output_queue))
-        jobs.append(p)
-        p.start()
-    
-    for job in jobs:
-        job.join()
-    
+    with Manager() as manager: 
+        output_queue = manager.Queue() 
+        num_cores = 8
+        with Pool(processes=num_cores) as pool: 
+            jobs = [] 
+            for hepmc in hepmc_files: 
+                jobs.append(pool.apply_async(worker, (hepmc, g4exe, output_dir, output_queue))) # Wait for all jobs to finish 
+            
+            for job in jobs: 
+                job.get()
     print("All done")
-    
+
     # Check the results in the queue and warn if there was a failure
-    results = [output_queue.get() for _ in range(len(jobs))]
+    results = [output_queue.get() for _ in range(len(hepmc_files))]
     was_success = True
     for (in_file, is_complete) in results:
         if not is_complete:
             print(f"Failed to generate output file for {in_file}")
             was_success = False
+
+    #TODO: Make number of CPU cores used configurable
+    # jobs = []
+    # output_queue = multiprocessing.Queue() 
+    # for hepmc in hepmc_files:
+        
+    #     nevents_in_file = get_number_of_events_in_hepmc(hepmc)
+        
+    #     p = multiprocessing.Process(target=process_one_file, args=(g4exe, hepmc, output_dir, nevents_in_file, output_queue))
+    #     jobs.append(p)
+    #     p.start()
     
-    if was_success:
-        print("All jobs succeeded!")
+    # for job in jobs:
+    #     job.join()
+    
+    # print("All done")
+    
+    # # Check the results in the queue and warn if there was a failure
+    # results = [output_queue.get() for _ in range(len(jobs))]
+    # was_success = True
+    # for (in_file, is_complete) in results:
+    #     if not is_complete:
+    #         print(f"Failed to generate output file for {in_file}")
+    #         was_success = False
+    
+    # if was_success:
+    #     print("All jobs succeeded!")
             
         
 if __name__ == "__main__":
