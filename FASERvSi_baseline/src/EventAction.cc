@@ -124,6 +124,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   "target pdgc" << eventInfo->GetTargetPDG() << G4endl;
   
   // Fill Hits trees
+  long unsigned int nHits{0};
   for (unsigned int det_idx{0}; det_idx < DetectorParameters::Get()->fnumSCTLayers; det_idx++)
   {   
     G4int tree_idx = det_idx + 1; // Need to offset by one since tree `0` is the `truth` tree
@@ -143,10 +144,12 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     {
       auto hit = static_cast<DetectorHit *>(hc->GetHit(i));
       if (hit->GetEnergy() < 1) continue;
-      runAction->FillHitsRow(hit->GetX(), hit->GetY(), hit->GetZ(), hit->GetEnergy(), hit->GetPDGID(), hit->GetCharge(), det_idx+1);
+      nHits++;
+      runAction->FillHitsRow(hit->GetX(), hit->GetY(), hit->GetZ(), hit->GetEnergy(), hit->GetPDGID(), hit->GetCharge(), det_idx);
     }
   }
-  G4int nMergedHits = runAction->MergeHits(17e-3, 580e-3); //TODO Don't hard code this!
-  std::cout << "Merged " << nMergedHits << " hits" << std::endl;
+  man->FillNtupleDColumn(0, 16, nHits); 
+  // G4int nMergedHits = runAction->MergeHits(17e-3, 580e-3); //TODO Don't hard code this!
+  // std::cout << "Merged " << nMergedHits << " hits" << std::endl;
   man->AddNtupleRow(0);
 }

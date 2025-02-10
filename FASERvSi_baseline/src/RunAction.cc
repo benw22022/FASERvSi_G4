@@ -77,6 +77,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
   man->CreateNtupleDColumn("cclepton_px");      // 13
   man->CreateNtupleDColumn("cclepton_py");      // 14
   man->CreateNtupleDColumn("cclepton_pz");      // 15
+  man->CreateNtupleDColumn("nHits");            // 16
   man->CreateNtupleDColumn("x",    m_hits_x);
   man->CreateNtupleDColumn("y",    m_hits_y);
   man->CreateNtupleDColumn("z",    m_hits_z);
