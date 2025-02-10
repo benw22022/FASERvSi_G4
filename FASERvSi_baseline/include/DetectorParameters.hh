@@ -36,6 +36,16 @@ class DetectorParameters  {
     G4double fdetWidth;
     G4double fdetHeight;
 
+    G4double fstripWidth;
+    G4double fstripsPerSide;
+    G4double fstripStereoAngle;
+    G4double fmoduleWidth; 
+    G4double fmoduleHeight;
+
+    G4double fSCTSideThickness;
+    G4double fsideSeparation;
+    G4double fsideThickness;
+
 };
 
 #endif 

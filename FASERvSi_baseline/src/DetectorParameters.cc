@@ -16,8 +16,17 @@ DetectorParameters::DetectorParameters()
     ftungstenThickness = 0.9*mm;
     // fSCTThickness = 0.5*mm; // 7.08*mm;
     fSCTThickness = 7.08*mm;
-
+    fSCTSideThickness = 1.00*mm; // 1 mm separation between front and back side of the SCT module
     fnumSCTLayers = 132;
+
+    fstripWidth = 0.08*mm; // 80 mircons
+    fstripsPerSide = 768;
+    fstripStereoAngle = 0.04; // 40 miliradians
+    fmoduleWidth = 125*mm;
+    fmoduleHeight = 31.25*mm;
+    fsideThickness = 0.1*mm;
+    fsideSeparation = 0.1*mm;
+
 
 }
 
