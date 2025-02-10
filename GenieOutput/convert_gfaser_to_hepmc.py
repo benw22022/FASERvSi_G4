@@ -16,13 +16,17 @@ import pyhepmc
 import argparse
 import os
 from tqdm import tqdm
+import cProfile
+import gc
 
 def main(input_file, nevents_per_file=None, outputdir=None):
 
     # Open the ROOT file and get the tree
-    events = uproot.open(f"{input_file}:gFaser")
+    data = uproot.open(f"{input_file}:gFaser")
     
-    nentries = events.num_entries
+    events = data.arrays(data.keys())
+        
+    nentries = data.num_entries
 
     # Work out number of files to make
     print(f"Processing {nentries} events")
@@ -45,11 +49,16 @@ def main(input_file, nevents_per_file=None, outputdir=None):
     writer = pyhepmc.io.WriterAscii(output_file)
 
     # Iterate over the entries in the tree
-    for event_num, data_dict in tqdm(enumerate(events.iterate(step_size=1, library="np")), total=nentries):
+    for event_num, data in tqdm(enumerate(events), total=nentries):
         
-        data = {}
-        for key, value in data_dict.items():   # Just reformat the arrays slightly since they're nested 
-            data[key] = value[0]
+        # if event_num < 160000:
+        #     if event_num % nevents_per_file == 0 and event_num != 0:
+        #         file_num += 1
+        #     continue
+        
+        # data = {}
+        # for key, value in data_dict.items():   # Just reformat the arrays slightly since they're nested 
+        #     data[key] = value[0]
          
         event = pyhepmc.GenEvent(pyhepmc.Units.GEV, pyhepmc.Units.MM)
         
@@ -114,6 +123,7 @@ def main(input_file, nevents_per_file=None, outputdir=None):
 
         event.add_vertex(vertex)
         writer.write_event(event)
+        gc.collect() #? Will this fix the massive slow down in code after 16,000 events ---> NOPE
         
         # Check if we need a new file
         # print(nevents_per_file, event_num, event_num % nevents_per_file )
@@ -127,9 +137,8 @@ def main(input_file, nevents_per_file=None, outputdir=None):
         
     writer.close()
     
-if __name__ == "__main__":
     
-    
+def wrapper():
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help='input file', type=str)
     parser.add_argument("-n",  "--nevents", help='number events per file', type=int, default=None)
@@ -137,3 +146,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     main(args.input, args.nevents, args.outputdir)
+    
+    
+if __name__ == "__main__":
+    
+    # cProfile.run('wrapper()')
+    wrapper()
+    
