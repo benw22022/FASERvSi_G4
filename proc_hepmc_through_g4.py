@@ -94,6 +94,20 @@ def process_one_file(g4exe: str, input_file: str, output_dir: str, nevents: int,
     write_macro(input_file, new_output_filepath, nevents=nevents, macro_name=macro_name)
     print(f"Processesing {input_file}...")
     
+    # Check if output file exists and is a valid ROOT file
+    skip_file = False
+    if os.path.exists(new_output_filepath):
+        print(f"Output file {new_output_filepath} already exists")
+        skip_file = True
+        file_size = os.path.getsize(new_output_filepath)
+        file_size_kb = file_size / 1024
+        if file_size_kb < 100:
+            print(f"Existing output file {new_output_filepath} < 100 KB. This is suspiciously small - will rerun")
+            skip_file = False
+    
+    if skip_file:
+        return
+    
     os.system(f"./{os.path.basename(g4exe)} {macro_name} > {logfile_name} 2>&1")
 
     if os.path.exists(new_output_filepath):
