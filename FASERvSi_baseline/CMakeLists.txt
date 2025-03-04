@@ -6,6 +6,30 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
 endif()
 project(FASERvSi_baseline)
 
+# If we have a conda env activated - look in there for the dependancies
+if(DEFINED ENV{CONDA_PREFIX})
+  message(STATUS "Using Conda environment at: $ENV{CONDA_PREFIX}")
+  include_directories("$ENV{CONDA_PREFIX}/include")
+  link_directories("$ENV{CONDA_PREFIX}/lib")
+  set(CMAKE_BUILD_RPATH "$ENV{CONDA_PREFIX}/lib")
+  set(CMAKE_INSTALL_RPATH "$ENV{CONDA_PREFIX}/lib")
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  set(CMAKE_PREFIX_PATH "$ENV{CONDA_PREFIX}")
+
+  # Find and setup Expat
+  find_package(EXPAT REQUIRED)
+  set(EXPAT_INCLUDE_DIR "$ENV{CONDA_PREFIX}/include")
+  set(EXPAT_LIBRARY "$ENV{CONDA_PREFIX}/lib/libexpat.so")
+  include_directories(${EXPAT_INCLUDE_DIR})
+
+  # Find and setup Motif
+  set(MOTIF_INCLUDE_DIR "$ENV{CONDA_PREFIX}/include")
+  set(MOTIF_LIBRARIES "$ENV{CONDA_PREFIX}/lib/libXm.so")
+  include_directories(${MOTIF_INCLUDE_DIR})
+  link_directories(${MOTIF_LIBRARIES})
+endif()
+
+
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
@@ -27,7 +51,6 @@ include(${Geant4_USE_FILE})
 # Find HepMC3 (required package)
 #
 find_package(HepMC3 REQUIRED)
-# find_package(HepMC REQUIRED)
 
 ##----------------------------------------------------------------------------
 ## Find Pythia6 (optional package)
@@ -53,17 +76,17 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(FASERvSi_baseline FASERvSi_baseline.cc ${sources} ${headers})
-#target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}
-#                      ${HEPMC_LIBRARIES} ${HEPMC_FIO_LIBRARIES}
-#                      ${PYTHIA6_LIBRARIES} gfortran)
-target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}
-                      ${HEPMC3_LIBRARIES} ${HEPMC3_FIO_LIBRARIES} ${HEPMC3_LIB}
-                      ${PYTHIA6_LIBRARIES})
 
-# if pythia is compiled with g77, link with -lg2c instead.
-#target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}
-#                      ${HEPMC_LIBRARIES} ${HEPMC_FIO_LIBRARIES}
-#                      ${PYTHIA6_LIBRARIES} g2c)
+if(DEFINED ENV{CONDA_PREFIX})
+  target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}
+                        ${HEPMC3_LIBRARIES} ${HEPMC3_FIO_LIBRARIES} ${HEPMC3_LIB}
+                        ${PYTHIA6_LIBRARIES} ${EXPAT_LIBRARY} "$ENV{CONDA_PREFIX}/lib/libstdc++.so")
+else()
+  target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}
+                        ${HEPMC3_LIBRARIES} ${HEPMC3_FIO_LIBRARIES} ${HEPMC3_LIB}
+                        ${PYTHIA6_LIBRARIES} ${EXPAT_LIBRARY})
+endif()
+
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
