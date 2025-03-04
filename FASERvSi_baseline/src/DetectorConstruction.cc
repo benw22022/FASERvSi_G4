@@ -189,8 +189,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   // ------------ GDML dump
   G4GDMLParser* gdmlParser = new G4GDMLParser();  
-  std::remove("FASERvSi_baseline.gdml"); // delete file
-  gdmlParser->Write("FASERvSi_baseline.gdml", experimentalHall_phys);
+  std::remove("FASERvSi_doubleHeight.gdml"); // delete file
+  gdmlParser->Write("FASERvSi_doubleHeight.gdml", experimentalHall_phys);
   delete gdmlParser;
 
 
