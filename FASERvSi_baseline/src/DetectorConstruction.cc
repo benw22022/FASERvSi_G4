@@ -50,13 +50,14 @@
 #include "G4UImessenger.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4GDMLParser.hh"
+
 #include "SCTModule.hh"
 
 #include "DetectorConstruction.hh"
 #include "DetectorParameters.hh"
-// #include "TrackerParametrisation.hh"
-// #include "TrackerSD.hh"
 #include "Detector.hh"
+
+
 #include <string>
 #include <fstream>
 
@@ -158,6 +159,7 @@ G4LogicalVolume* constructVertTrackingLayerLogical(SCTModule& sctModule)
 
   G4VisAttributes* tracking_layerVisAtt = new G4VisAttributes(G4Colour::Blue());
   tracking_layerVisAtt->SetForceWireframe(true);
+  tracking_layerVisAtt->SetVisibility(false);
   tracking_layer_log->SetVisAttributes(tracking_layerVisAtt);
 
   return tracking_layer_log;
@@ -212,6 +214,7 @@ G4LogicalVolume* constructHozTrackingLayerLogical(SCTModule& sctModule)
 
   G4VisAttributes* tracking_layerVisAtt = new G4VisAttributes(G4Colour::Blue());
   tracking_layerVisAtt->SetForceWireframe(true);
+  tracking_layerVisAtt->SetVisibility(false);
   tracking_layer_log->SetVisAttributes(tracking_layerVisAtt);
 
   return tracking_layer_log;
@@ -244,6 +247,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   fSCT_strip_log = sctModule.GetStripLogical();
   G4LogicalVolume* tracking_hoz_layer_log = constructHozTrackingLayerLogical(sctModule);
   G4LogicalVolume* tracking_vert_layer_log = constructVertTrackingLayerLogical(sctModule);
+  G4Box* tracking_layer_box = dynamic_cast<G4Box*>(tracking_vert_layer_log->GetSolid());
+  G4double tracking_layer_thickness = 2*tracking_layer_box->GetZHalfLength();
+  G4double tungsten_thickness = 2*DetectorParameters::Get()->ftungstenThickness;  
   
   //* Tungsten target
   G4Box* Target_box = new G4Box("Target_box", DetectorParameters::Get()->fdetWidth/2, DetectorParameters::Get()->fdetHeight/2, DetectorParameters::Get()->ftungstenThickness/2);
@@ -254,13 +260,21 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   //* Place layers and targets 
   G4double pos = DetectorParameters::Get()->ftargetStartPosZ;
+  G4double target_mass = 0*g;
   for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
   {
     G4VPhysicalVolume* Target_phys = new G4PVPlacement(0, G4ThreeVector(0, 0, pos), Target_log, "Target_phys", experimentalHall_log, false, i);
+    auto solid = Target_log->GetSolid();
+    auto material = Target_log->GetMaterial();
+    G4double volume = solid->GetCubicVolume();
+    G4double density = material->GetDensity();  // g/cm³
+    G4double mass = density/(g/cm3) * volume/cm3;  // grams
+    target_mass = target_mass + mass;
+
     checkOverlaps(Target_phys);
 
     G4VPhysicalVolume* SD_phys;
-    pos += DetectorParameters::Get()->ftungstenThickness/2 + DetectorParameters::Get()->fSCTThickness/2;
+    pos += tungsten_thickness/2 + tracking_layer_thickness/2;
     if (i%2 == 0)
     {
       SD_phys = new G4PVPlacement(0, G4ThreeVector(0,  0, pos), tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
@@ -269,19 +283,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     {
       SD_phys = new G4PVPlacement(0, G4ThreeVector(0,  0, pos), tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
     }
-    pos += DetectorParameters::Get()->ftungstenThickness/2 + DetectorParameters::Get()->fSCTThickness/2;
+    pos += tungsten_thickness/2 + tracking_layer_thickness/2;
     checkOverlaps(SD_phys);
   }
 
   G4cout << "Detector length = " << pos - DetectorParameters::Get()->ftargetStartPosZ << " mm" << G4endl;
-
+  G4cout << "Tungsten target mass = " << target_mass << " g" << G4endl;
 
   // // ------------ GDML dump
   // G4GDMLParser* gdmlParser = new G4GDMLParser();  
   // std::remove("FASERvSi_doubleHeight.gdml"); // delete file
   // gdmlParser->Write("FASERvSi_doubleHeight.gdml", experimentalHall_phys);
   // delete gdmlParser;
-
 
   return experimentalHall_phys;
 }
@@ -290,7 +303,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 void DetectorConstruction::ConstructSDandField(){
   
   G4SDManager *sdman = G4SDManager::GetSDMpointer();
-  std::string detName = "strips";
+  std::string detName = "strip_detector";
   Detector* sensDet = new Detector(detName);
   fSCT_strip_log->SetSensitiveDetector(sensDet);
   sdman->AddNewDetector(sensDet);

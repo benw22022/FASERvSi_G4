@@ -16,11 +16,24 @@ SCTModule::SCTModule()
     G4Box* fStrip_indiv = new G4Box("strip_indiv", fPlaneWidth/2, (fPlaneWidth/fNstrips)/2, fPlaneThickness/2);  // Oriented with long edge in y-direction
     fStrip_plane_log = new G4LogicalVolume(fStrip_plane, fSilicon, "strip_plane_log", 0,0,0);
     fStrip_indiv_log = new G4LogicalVolume(fStrip_indiv, fSilicon, "strip_inidv_log", 0,0,0);
-
     fStrip_div = new G4PVDivision("strip_div", fStrip_indiv_log, fStrip_plane_log, kXAxis, fNstrips, 0 );
-    G4VisAttributes* strip_divVisAtt = new G4VisAttributes(G4Colour::Green());
-    strip_divVisAtt->SetForceWireframe(true);
-    fStrip_plane_log->SetVisAttributes(strip_divVisAtt);
+    
+    // Set visibility attributes for bounding box
+    G4VisAttributes* boxVisAtt = new G4VisAttributes(G4Colour::Brown());
+    boxVisAtt->SetForceWireframe(true);
+    boxVisAtt->SetVisibility(false);
+    fModule_log->SetVisAttributes(boxVisAtt);
+
+    // Set visibility attributes for silicon planes
+    G4VisAttributes* strip_planeVisAtt = new G4VisAttributes(G4Colour::Green());
+    // strip_planeVisAtt->SetForceWireframe(true);
+    strip_planeVisAtt->SetForceSolid(true);
+    fStrip_plane_log->SetVisAttributes(strip_planeVisAtt);
+
+    // Make individual strips invisible in visualization (too many to display usefully)
+    G4VisAttributes* strip_invis = new G4VisAttributes();
+    strip_invis->SetVisibility(false);
+    fStrip_indiv_log->SetVisAttributes(strip_invis);
 
     // Place the two strip planes inside the module bounding box
     G4VPhysicalVolume* strip_plane_side1_phys = new G4PVPlacement(

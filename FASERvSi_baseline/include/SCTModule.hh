@@ -1,6 +1,9 @@
 #ifndef SCTModule_hh
 #define SCTModule_hh
 
+#include <vector>
+#include <algorithm>
+
 #include "G4LogicalVolume.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4Box.hh"
@@ -12,9 +15,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4VisAttributes.hh"
 #include "G4PVPlacement.hh"
-#include <vector>
-#include <algorithm>
-
 
 class SCTModule {
   
@@ -28,7 +28,7 @@ class SCTModule {
         G4VPhysicalVolume* PlaceModule(G4LogicalVolume* mother_log, const G4ThreeVector& position, G4RotationMatrix* rotation, G4int copyNo) const;
 
     private:
-        G4int fNstrips = 10; //768;
+        G4int fNstrips = 768;
         G4double fStereoAngle = 40 * mrad;
         G4double fStripLength = 128.05*mm;
         G4double fPlaneWidth = 63.56*mm;
