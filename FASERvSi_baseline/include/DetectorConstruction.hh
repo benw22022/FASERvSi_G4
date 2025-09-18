@@ -35,6 +35,7 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "DetectorConstructionMessenger.hh"
 #include "DetectorParameters.hh"
+#include "G4PVDivision.hh"
 #include <vector>
 
 class G4LogicalVolume;
@@ -58,15 +59,15 @@ private:
   G4Material* fTungsten;
   G4Material* fVacuum;
   
-  std::vector<G4LogicalVolume*> fTarget_log;
-  std::vector<G4LogicalVolume*> fSD_log;
+  G4LogicalVolume* fTarget_log;
+  G4LogicalVolume* fSCT_strip_log;
 
   std::vector<G4VPhysicalVolume*> fSD_phys;
   std::vector<G4VPhysicalVolume*> fTarget_phys;
   
   bool detectorCreated{false};
 
-  virtual void ConstructSDandField();
+  void ConstructSDandField() override;
   
   DetectorConstructionMessenger* messenger;
 
