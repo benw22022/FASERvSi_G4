@@ -34,8 +34,9 @@
 #include "globals.hh"
 #include "G4ThreeVector.hh"
 #include "G4UserStackingAction.hh"
-#include "TrackerHit.hh"
-#include "MuonHit.hh"
+#include "G4THitsCollection.hh"
+// #include "TrackerHit.hh"
+// #include "MuonHit.hh"
 
 class G4Track;
 class StackingActionMessenger;
@@ -62,9 +63,7 @@ private:
   G4bool InsideRoI(const G4Track * aTrack,G4double ang);
   G4VHitsCollection* GetCollection(G4String colName);
 
-  TrackerHitsCollection* fTrkHits;
-  MuonHitsCollection* fMuonHits;
-  StackingActionMessenger* fMessenger;
+  // StackingActionMessenger* fMessenger;
 
   G4int fStage;
   G4int fReqMuon;

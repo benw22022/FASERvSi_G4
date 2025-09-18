@@ -38,8 +38,8 @@
 #include "G4VHitsCollection.hh"
 #include "EventAction.hh"
 #include "DetectorHit.hh"
-#include "MuonHit.hh"
-#include "TrackerHit.hh"  
+// #include "MuonHit.hh"
+// #include "TrackerHit.hh"  
 #include "DetectorParameters.hh"
 #include <string>
 #include "Randomize.hh"
