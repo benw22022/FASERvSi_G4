@@ -1,69 +1,72 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file eventgenerator/HepMC/HepMCEx01/src/PrimaryGeneratorAction.cc
-/// \brief Implementation of the PrimaryGeneratorAction class
-//
-//
-
-#include "PrimaryGeneratorAction.hh"
 #include "PrimaryGeneratorMessenger.hh"
+#include "PrimaryGeneratorAction.hh"
+
+#include "generators/GeneratorBase.hh"
+#include "generators/GENIEGenerator.hh"
+#include "generators/HepMCGenerator.hh"
+
+#include "EventInformation.hh"
 
 #include "G4Event.hh"
-#include "G4ParticleGun.hh"
-#include "HepMCG4AsciiReader.hh"
+#include "G4Exception.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 PrimaryGeneratorAction::PrimaryGeneratorAction()
- : G4VUserPrimaryGeneratorAction()
 {
-  // default generator is particle gun.
-  fCurrentGenerator = fParticleGun= new G4ParticleGun();
-  fCurrentGeneratorName = "fParticleGun";
-  fHepmcAscii = new HepMCG4AsciiReader();
+  // create a messenger for this class
+  fGenMessenger = new PrimaryGeneratorMessenger(this);
 
-  fGentypeMap["particleGun"] = fParticleGun;
-  fGentypeMap["hepmcAscii"] = fHepmcAscii;
+  // start with default generator
+  fGenerator = new GPSGenerator();
+  fInitialized = false;
 
-
-  fMessenger= new PrimaryGeneratorMessenger(this);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
-  delete fMessenger;
+  delete fGenerator;
+  delete fGenMessenger;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void PrimaryGeneratorAction::SetGenerator(G4String name)
+{
+  G4StrUtil::to_lower(name);
+
+  if( name == "genie" )
+    fGenerator = new GENIEGenerator();
+  else if( name == "hepmc" )
+    fGenerator = new HepMCGenerator();
+  // else if ( name == "gun" )
+  //   fGenerator = new GPSGenerator();
+  else{
+    G4String err = "Unknown generator option " + name;
+    G4Exception("PrimaryGeneratorAction",
+                "UnknownOption",
+                FatalErrorInArgument,
+                err.c_str());
+  }
+}
+
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  if(fCurrentGenerator)
-    fCurrentGenerator-> GeneratePrimaryVertex(anEvent);
-  else
-    G4Exception("PrimaryGeneratorAction::GeneratePrimaries",
-                "PrimaryGeneratorAction001", FatalException,
-                "generator is not instanciated." );
+  // load generator data at first event
+  // this function opens files, reads trees, etc (if required)
+  if(!fInitialized){
+    fGenerator->LoadData();
+    fInitialized = true;
+  }
+
+  G4cout << G4endl;
+  G4cout << "===oooOOOooo=== Event Generator (# " << anEvent->GetEventID();
+
+  // reset event metadata
+  fGenerator->ResetEventMetadata();
+
+  // produce an event with current generator
+  fGenerator->GeneratePrimaries(anEvent);
+
+  // save vertex metadata information into the event
+  anEvent->SetUserInformation(new EventInformation(fGenerator->GetEventMetadata()));
+
 }

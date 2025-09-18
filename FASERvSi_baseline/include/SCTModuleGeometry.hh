@@ -1,5 +1,5 @@
-#ifndef SCTModule_hh
-#define SCTModule_hh
+#ifndef SCTModuleGeometry_hh
+#define SCTModuleGeometry_hh
 
 #include <vector>
 #include <algorithm>
@@ -16,11 +16,11 @@
 #include "G4VisAttributes.hh"
 #include "G4PVPlacement.hh"
 
-class SCTModule {
+class SCTModuleGeometry {
   
     public:
-        SCTModule();
-        ~SCTModule(){};
+        SCTModuleGeometry();
+        ~SCTModuleGeometry(){};
 
         G4Box* GetModuleBox() const { return fModuleBoundingBox; };
         G4LogicalVolume* GetModuleLogical() const { return fModule_log; };

@@ -51,7 +51,7 @@
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4GDMLParser.hh"
 
-#include "SCTModule.hh"
+#include "SCTModuleGeometry.hh"
 
 #include "DetectorConstruction.hh"
 #include "DetectorParameters.hh"
@@ -128,7 +128,7 @@ ____________________________
 |_____||_____||_____||_____|
 */
 
-G4LogicalVolume* constructVertTrackingLayerLogical(SCTModule& sctModule)
+G4LogicalVolume* constructVertTrackingLayerLogical(SCTModuleGeometry& sctModule)
 {
   G4Box* sct_module_box = sctModule.GetModuleBox();
   G4Box* tracking_layer_box = new G4Box("tracking_layer_b",
@@ -181,7 +181,7 @@ Construct tracking layer with modules oriented with long edge in x-direction
 |      7     |     8       |
 ----------------------------
 */
-G4LogicalVolume* constructHozTrackingLayerLogical(SCTModule& sctModule)
+G4LogicalVolume* constructHozTrackingLayerLogical(SCTModuleGeometry& sctModule)
 {
   G4Box* sct_module_box = sctModule.GetModuleBox();
   G4Box* tracking_layer_box = new G4Box("tracking_layer_b",
@@ -243,7 +243,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   experimentalHall_log->SetVisAttributes(experimentalHallVisAtt);
 
   //* SCT module and tracking layers
-  SCTModule sctModule = SCTModule();
+  SCTModuleGeometry sctModule = SCTModuleGeometry();
   fSCT_strip_log = sctModule.GetStripLogical();
   G4LogicalVolume* tracking_hoz_layer_log = constructHozTrackingLayerLogical(sctModule);
   G4LogicalVolume* tracking_vert_layer_log = constructVertTrackingLayerLogical(sctModule);
@@ -287,14 +287,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     checkOverlaps(SD_phys);
   }
 
+  // Print mass and length of the detector
   G4cout << "Detector length = " << pos - DetectorParameters::Get()->ftargetStartPosZ << " mm" << G4endl;
   G4cout << "Tungsten target mass = " << target_mass << " g" << G4endl;
 
-  // // ------------ GDML dump
-  // G4GDMLParser* gdmlParser = new G4GDMLParser();  
-  // std::remove("FASERvSi_doubleHeight.gdml"); // delete file
-  // gdmlParser->Write("FASERvSi_doubleHeight.gdml", experimentalHall_phys);
-  // delete gdmlParser;
+  //* GDML dump
+  G4GDMLParser* gdmlParser = new G4GDMLParser();  
+  std::remove("FASERvSi.gdml"); // delete file
+  gdmlParser->Write("FASERvSi.gdml", experimentalHall_phys, true);
+  delete gdmlParser;
 
   return experimentalHall_phys;
 }

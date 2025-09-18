@@ -1,8 +1,8 @@
-#include "SCTModule.hh"
+#include "SCTModuleGeometry.hh"
 #include <cmath>
 
 
-SCTModule::SCTModule()
+SCTModuleGeometry::SCTModuleGeometry()
 {   
     // Calculate bounding box dimensions
     G4double x_bounds = fStripLength * sin(fStereoAngle) + fPlaneWidth * cos(fStereoAngle);
@@ -58,7 +58,7 @@ SCTModule::SCTModule()
         1);
 }
 
-G4VPhysicalVolume* SCTModule::PlaceModule(G4LogicalVolume* mother_log, const G4ThreeVector& position, G4RotationMatrix* rotation, G4int copyNo) const
+G4VPhysicalVolume* SCTModuleGeometry::PlaceModule(G4LogicalVolume* mother_log, const G4ThreeVector& position, G4RotationMatrix* rotation, G4int copyNo) const
 {
     G4VPhysicalVolume* module_phys = new G4PVPlacement(
         rotation,
