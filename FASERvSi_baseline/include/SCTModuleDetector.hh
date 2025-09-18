@@ -10,11 +10,11 @@
 
 typedef G4THitsCollection<SCTModuleHit> SCTModuleHitsCollection;
 
-class SCTModuleSD : public G4VSensitiveDetector
+class SCTModuleDetector : public G4VSensitiveDetector
 {
 public:
-    SCTModuleSD(G4String);
-    ~SCTModuleSD();
+    SCTModuleDetector(G4String);
+    ~SCTModuleDetector();
 
   void Initialize(G4HCofThisEvent *HCE);
   /// Temporary map of hits is stored in hit collection, to be retrieved

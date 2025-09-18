@@ -1,17 +1,17 @@
-#include "SCTModuleSD.hh"
+#include "SCTModuleDetector.hh"
 #include "G4SystemOfUnits.hh"
 #include "SCTModuleHit.hh"
 
-SCTModuleSD::SCTModuleSD(G4String name) :
+SCTModuleDetector::SCTModuleDetector(G4String name) :
   G4VSensitiveDetector(name) {
   G4cout << "creating a sensitive detector with name: " << name << G4endl;
   collectionName.insert(name);
 }
 
-SCTModuleSD::~SCTModuleSD(){}
+SCTModuleDetector::~SCTModuleDetector(){}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void SCTModuleSD::Initialize(G4HCofThisEvent *HCE) {
+void SCTModuleDetector::Initialize(G4HCofThisEvent *HCE) {
   fHitCollection = new SCTModuleHitsCollection(GetName(), collectionName[0]);
 
   if (fHCID < 0)
@@ -22,7 +22,7 @@ void SCTModuleSD::Initialize(G4HCofThisEvent *HCE) {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-// void SCTModuleSD::EndOfEvent(G4HCofThisEvent *) {
+// void SCTModuleDetector::EndOfEvent(G4HCofThisEvent *) {
 //   for (auto it = fTmpHits.begin(); it != fTmpHits.end(); ++it) fHitCollection->insert(*it);
 
 //   fTmpHits.clear();
@@ -30,7 +30,7 @@ void SCTModuleSD::Initialize(G4HCofThisEvent *HCE) {
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4bool SCTModuleSD::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist){
+G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist){
 
   G4Track* track = aStep->GetTrack();
   //track->SetTrackStatus(fStopAndKill);
@@ -40,13 +40,6 @@ G4bool SCTModuleSD::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist){
   G4ThreeVector posHit = preStepPoint->GetPosition();
   G4int pdgid = track->GetParticleDefinition()->GetPDGEncoding();
   G4double energy = track->GetDynamicParticle()->Get4Momentum().e();
-
-  // if (energy/MeV < 2) //! I'm not actully sure about this
-  // {
-  //   G4cout << "Hit energy too low: " << energy/MeV << " MeV, skipping hit." << G4endl;
-  //   return 0;
-  // }
-
   G4double px = track->GetDynamicParticle()->Get4Momentum().px();
   G4double py = track->GetDynamicParticle()->Get4Momentum().py();
   G4double pz = track->GetDynamicParticle()->Get4Momentum().pz();

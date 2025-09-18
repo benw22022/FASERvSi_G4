@@ -55,7 +55,7 @@
 
 #include "DetectorConstruction.hh"
 #include "DetectorParameters.hh"
-#include "Detector.hh"
+#include "SCTModuleDetector.hh"
 
 
 #include <string>
@@ -305,7 +305,7 @@ void DetectorConstruction::ConstructSDandField(){
   
   G4SDManager *sdman = G4SDManager::GetSDMpointer();
   std::string detName = "strip_detector";
-  Detector* sensDet = new Detector(detName);
+  Detector* sensDet = new SCTModuleDetector(detName);
   fSCT_strip_log->SetSensitiveDetector(sensDet);
   sdman->AddNewDetector(sensDet);
 
