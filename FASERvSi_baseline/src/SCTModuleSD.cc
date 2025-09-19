@@ -50,6 +50,11 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   G4double delta_energy = aStep->GetDeltaEnergy();
   G4int sensor_id = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
 
+  G4int strip_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(0);
+  G4int strip_side = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(1);
+  G4int module_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(2);
+  G4int layer_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(3);
+
   SCTModuleHit* tmpHit = new SCTModuleHit();
 
   G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
@@ -74,6 +79,10 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   tmpHit->SetTrackID(track->GetTrackID());
   tmpHit->SetParentID(track->GetParentID());
   tmpHit->SetCopyNumSensor(sensor_id);
+  tmpHit->SetStripNumber(strip_number);
+  tmpHit->SetStripSide(strip_side);
+  tmpHit->SetModuleNumber(module_number);
+  tmpHit->SetLayerNumber(layer_number);
   tmpHit->SetT(time/ns);
   tmpHit->SetTrackVertex(track->GetVertexPosition()/mm);
   tmpHit->SetTrackP4(track->GetDynamicParticle()->Get4Momentum()/GeV);

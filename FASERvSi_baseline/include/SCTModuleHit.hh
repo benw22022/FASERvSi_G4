@@ -76,6 +76,18 @@ public:
     fCopyNumSensor = copyNumSensor;
   }
 
+  inline void SetStripNumber(G4int stripNumber){
+    fStripNumber = stripNumber;
+  }
+  inline void SetStripSide(G4int stripSide){
+    fStripSide = stripSide;
+  }
+  inline void SetModuleNumber(G4int moduleNumber){
+    fModuleNumber = moduleNumber;
+  }
+  inline void SetLayerNumber(G4int layerNumber){
+    fLayerNumber = layerNumber;
+  }
 
   /// Get hit X position
   inline G4double GetX() const { return fPosX; }
@@ -113,6 +125,14 @@ public:
   inline G4double GetDeltaE() const { return fDeltaE; }
   /// Get copy number of the sensor
   inline G4int GetCopyNumSensor() const { return fCopyNumSensor; }
+  /// Get strip number within a module (0 to 767)
+  inline G4int GetStripNumber() const { return fStripNumber; }
+  /// Get side number within a module (0 (front) or 1 (back))
+  inline G4int GetStripSide() const { return fStripSide; }
+  /// Get module number within a layer (0 to 8) 
+  inline G4int GetModuleNumber() const { return fModuleNumber; }
+  /// Get layer number (0 to NTrackingLayers)
+  inline G4int GetLayerNumber() const { return fLayerNumber; }
 
   inline G4ThreeVector GetTrackVertex() const {return fTrackVertex;};
   inline G4LorentzVector GetTrackP4() const {return fTrackP4;};
@@ -158,6 +178,11 @@ private:
   G4int fParentID = -999;
   // Copy number of the sensor
   G4int fCopyNumSensor = -1;
+  
+  G4int fStripNumber = -1;     // Strip number within a module (0 to 767)
+  G4int fStripSide = -1;       // Side number within a module (0 (front) or 1 (back))
+  G4int fModuleNumber = -1;    // Module number within a layer (0 to 8)
+  G4int fLayerNumber = -1;     // Number of the tracking layer (0 to NTrackingLayers)
 
   G4ThreeVector fTrackVertex{-999., -999., -999.};
   G4LorentzVector fTrackP4{0,0,0,0};
