@@ -125,12 +125,14 @@ def main():
         ax[0].set_xlabel("z position (mm)")
         ax[0].set_ylabel("y position (mm)")
         ax[0].set_xlim((550, 1600))
-        ax[0].set_ylim((-150, 150))
+        # ax[0].set_ylim((-150, 150))
         
         ax[1].set_xlabel("x position (mm)")
         ax[1].set_ylabel("y position (mm)")
         ax[1].set_xlim((-125, 125))
-        ax[1].set_ylim((-150, 150))
+        # ax[1].set_ylim((-150, 150))
+        
+        ax[0].set_title(f"{is_cc_label} {neutrino_pdgc_to_label_dict[neutrino_pdgc]} + {get_name_from_pdgc(target_pdgc)}", loc="left")
         
         plt.savefig(f"{output_dir}/event_{i}_particle-dist-x-y-z-y.png", dpi=300, bbox_inches='tight')
             # plt.show()
