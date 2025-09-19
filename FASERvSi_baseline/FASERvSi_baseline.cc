@@ -112,7 +112,7 @@ int main(int argc,char** argv)
     }
   else
     {  // interactive mode : define UI session
-      UImanager->ApplyCommand("/control/execute init_vis.mac");
+      UImanager->ApplyCommand("/control/execute macros/init_vis.mac");
       // UImanager->ApplyCommand("/geometry/test/resolution 1000000");
       ui->SessionStart();
       delete ui;

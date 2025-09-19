@@ -26,8 +26,8 @@ include(${Geant4_USE_FILE})
 #----------------------------------------------------------------------------
 # Find HepMC3 (required package)
 #
-find_package(HepMC3 REQUIRED)
-# find_package(HepMC REQUIRED)
+find_package(HepMC3 REQUIRED)  # <-- For HepMC3
+# find_package(HepMC REQUIRED) # <-- For HepMC2
 
 #----------------------------------------------------------------------------
 # Find ROOT (required package)
@@ -62,39 +62,33 @@ file(GLOB_RECURSE sources ${PROJECT_SOURCE_DIR}/src/*.cc
 file(GLOB_RECURSE headers ${PROJECT_SOURCE_DIR}/include/*.hh 
                           ${PROJECT_SOURCE_DIR}/include/reco/*.hh
                           ${PROJECT_SOURCE_DIR}/include/generators/*.hh)
-
-#----------------------------------------------------------------------------
-# Add the executable, and link it to the Geant4 libraries
-#
-add_executable(FASERvSi_baseline FASERvSi_baseline.cc ${sources} ${headers})
-#target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}
-#                      ${HEPMC_LIBRARIES} ${HEPMC_FIO_LIBRARIES}
-#                      ${PYTHIA6_LIBRARIES} gfortran)
-target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}
-                      ${HEPMC3_LIBRARIES} ${HEPMC3_FIO_LIBRARIES} ${HEPMC3_LIB}
-                      ${PYTHIA6_LIBRARIES} ${ROOT_LIBRARIES})
-
-# if pythia is compiled with g77, link with -lg2c instead.
-#target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}
-#                      ${HEPMC_LIBRARIES} ${HEPMC_FIO_LIBRARIES}
-#                      ${PYTHIA6_LIBRARIES} g2c)
-
+file(GLOB_RECURSE macros RELATIVE ${PROJECT_SOURCE_DIR} macros/*.mac)
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build FASERvSi_baseline. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-set(FASERvSi_baseline
-    init_vis.mac vis.mac
-  )
-
-foreach(_script ${FASERvSi_baseline})
+# Enable macros for out-of-source build
+foreach(_file ${macros})
   configure_file(
-    ${PROJECT_SOURCE_DIR}/${_script}
-    ${PROJECT_BINARY_DIR}/${_script}
+    ${_file}
+    ${PROJECT_BINARY_DIR}/${_file}
     COPYONLY
     )
+    #message(STATUS "Copying ${_file} in ${PROJECT_BINARY_DIR}/${_file}")
 endforeach()
+
+#----------------------------------------------------------------------------
+# Add the executable, and link it to the Geant4 libraries
+#
+add_executable(FASERvSi_baseline FASERvSi_baseline.cc ${sources} ${headers})
+
+target_link_libraries(FASERvSi_baseline 
+                      ${Geant4_LIBRARIES}
+                      ${HEPMC3_LIBRARIES} 
+                      ${HEPMC3_FIO_LIBRARIES} 
+                      ${HEPMC3_LIB}
+                      ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
