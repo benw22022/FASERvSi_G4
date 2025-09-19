@@ -9,7 +9,7 @@
 // * include a list of copyright holders.                             *
 // *                                                                  *
 // * Neither the authors of this software system, nor their employing *
-// * institutes,nor the evtActcies providing financial support for this *
+// * institutes,nor the agencies providing financial support for this *
 // * work  make  any representation or  warranty, express or implied, *
 // * regarding  this  software system or assume any liability for its *
 // * use.  Please see the license in the file  LICENSE  and URL above *
@@ -23,71 +23,58 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file Rungenerator/HepMC/HepMCEx01/src/RunActionMessenger.cc
-/// \brief Implementation of the RunActionMessenger class
-//
-//
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+#include "AnalysisManagerMessenger.hh"
+
+//#include <sstream>
+
+#include "AnalysisManager.hh"
 #include "G4UIdirectory.hh"
-#include "G4UIcmdWithoutParameter.hh"
+#include "G4UIcommand.hh"
+#include "G4UIparameter.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
-#include "RunActionMessenger.hh"
-#include "RunAction.hh"
-
+#include "G4UIcmdWithABool.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-RunActionMessenger::RunActionMessenger
-                             (RunAction* evtAct)
-  : act(evtAct)
+
+  AnalysisManagerMessenger::AnalysisManagerMessenger(AnalysisManager* manager)
+  :fAnalysisManager (manager)
 {
-  dir= new G4UIdirectory("/ntuple/");
-  dir-> SetGuidance("Ntuple writing");
+  fOutDir = new G4UIdirectory("/out/");
+  fOutDir->SetGuidance("output control");
 
-//   verbose=
-//     new G4UIcmdWithAnInteger("/ntuple/verbose", this);
-//   verbose-> SetGuidance("Set verbose level");
-//   verbose-> SetParameterName("verboseLevel", false, false);
-//   verbose-> SetRange("verboseLevel>=0 && verboseLevel<=1");
+  fFileCmd = new G4UIcmdWithAString("/out/fileName", this);
+  fFileCmd->SetGuidance("set name for the histograms file");
+  fFileCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
-  open= new G4UIcmdWithAString("/ntuple/output", this);
-  open-> SetGuidance("path to output NTuple");
-  open-> SetParameterName("Ntuple output name", true, true);
+  fSaveTrackCmd = new G4UIcmdWithABool("/out/saveTrack", this);
+  fSaveTrackCmd->SetGuidance("whether save the information of all tracks");
+  fSaveTrackCmd->SetParameterName("saveTrack", true);
+  fSaveTrackCmd->SetDefaultValue(false);
+
+  fFASER2Dir = new G4UIdirectory("/out/faser/");
+  fFASER2Dir->SetGuidance("flare output control");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-RunActionMessenger::~RunActionMessenger()
-{
-  // delete verbose;
-  delete open;
 
-  delete dir;
+AnalysisManagerMessenger::~AnalysisManagerMessenger()
+{
+  delete fFileCmd;
+  delete fSaveTrackCmd;
+  delete fOutDir;
+  delete fFASER2Dir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void RunActionMessenger::SetNewValue(G4UIcommand* command, G4String newValues)
-{
-//   if (command==verbose) {
-//     int level= verbose-> GetNewIntValue(newValues);
-//     gen-> SetVerboseLevel(level);
-//   } else 
-  if (command==open) {
-    act-> SetOutputFileName(newValues);
-    G4cout << "Writing to NTuple: " << act-> GetOutputFileName() << G4endl;
-  }
-}
 
+void AnalysisManagerMessenger::SetNewValue(G4UIcommand* command,G4String newValues)
+{
+  if (command == fFileCmd) fAnalysisManager->setFileName(newValues);
+  if (command == fSaveTrackCmd) fAnalysisManager->saveTrack(fSaveTrackCmd->GetNewBoolValue(newValues));
+
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4String RunActionMessenger::GetCurrentValue(G4UIcommand* command)
-{
-    G4String cv;
-
-//   if (command == verbose) {
-//     cv = verbose-> ConvertToString(gen-> GetVerboseLevel());
-//   } else  
-    if (command == open) 
-    {
-        cv = act-> GetOutputFileName();
-    }
-    return cv;
-}

@@ -3,8 +3,6 @@
 #include "generators/GENIEGeneratorMessenger.hh"
 #include "generators/GeneratorVertexMetadata.hh"
 
-#include "geometry/GeometricalParameters.hh"
-
 #include "G4PrimaryVertex.hh"
 #include "G4PrimaryParticle.hh"
 #include "G4ParticleTable.hh"
@@ -162,22 +160,22 @@ void GENIEGenerator::GeneratePrimaries(G4Event* anEvent)
   G4LorentzVector fslP4(m_pxl*GeV,m_pyl*GeV,m_pzl*GeV,m_El*GeV);
   G4LorentzVector neuX4;
 
-  G4Random::setTheSeed(currentIdx+1);
-  if(fRandomVtx){
-    neuX4.setX(GeometricalParameters::Get()->GetFLArEPosition().x() +
-              (G4UniformRand()-0.5) * GeometricalParameters::Get()->GetFLArEFidVolSize().x());
-    neuX4.setY(GeometricalParameters::Get()->GetFLArEPosition().y() +
-              (G4UniformRand()-0.5) * GeometricalParameters::Get()->GetFLArEFidVolSize().y());
-    neuX4.setZ(GeometricalParameters::Get()->GetFLArEPosition().z() +
-              (G4UniformRand()-0.5) * GeometricalParameters::Get()->GetFLArEFidVolSize().z());
-    neuX4.setT(0.);
-  } else {
-    neuX4.setX(0.*m);
-    neuX4.setY(0.*m);
-    neuX4.setZ(GeometricalParameters::Get()->GetFLArEPosition().z() -
-                 GeometricalParameters::Get()->GetFLArEFidVolSize().z()/2);
-    neuX4.setT(0.);
-  }
+  // G4Random::setTheSeed(currentIdx+1);
+  // if(fRandomVtx){
+  //   neuX4.setX(GeometricalParameters::Get()->GetFLArEPosition().x() +
+  //             (G4UniformRand()-0.5) * GeometricalParameters::Get()->GetFLArEFidVolSize().x());
+  //   neuX4.setY(GeometricalParameters::Get()->GetFLArEPosition().y() +
+  //             (G4UniformRand()-0.5) * GeometricalParameters::Get()->GetFLArEFidVolSize().y());
+  //   neuX4.setZ(GeometricalParameters::Get()->GetFLArEPosition().z() +
+  //             (G4UniformRand()-0.5) * GeometricalParameters::Get()->GetFLArEFidVolSize().z());
+  //   neuX4.setT(0.);
+  // } else {
+  //   neuX4.setX(0.*m);
+  //   neuX4.setY(0.*m);
+  //   neuX4.setZ(GeometricalParameters::Get()->GetFLArEPosition().z() -
+  //                GeometricalParameters::Get()->GetFLArEFidVolSize().z()/2);
+  //   neuX4.setT(0.);
+  // }
 
   // create primary vertex (neutrino)
   G4PrimaryVertex* vtx = new G4PrimaryVertex(neuX4.x(), neuX4.y(), neuX4.z(), neuX4.t()); 

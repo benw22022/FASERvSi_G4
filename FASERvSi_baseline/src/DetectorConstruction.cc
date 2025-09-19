@@ -305,7 +305,7 @@ void DetectorConstruction::ConstructSDandField(){
   
   G4SDManager *sdman = G4SDManager::GetSDMpointer();
   std::string detName = "strip_detector";
-  Detector* sensDet = new SCTModuleDetector(detName);
+  SCTModuleDetector* sensDet = new SCTModuleDetector(detName);
   fSCT_strip_log->SetSensitiveDetector(sensDet);
   sdman->AddNewDetector(sensDet);
 

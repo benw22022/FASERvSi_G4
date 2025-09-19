@@ -11,6 +11,9 @@
 #include "TH2F.h"
 
 
+#include "AnalysisManagerMessenger.hh"
+#include "FPFParticle.hh"
+
 class AnalysisManager {
   public:
 
@@ -27,9 +30,8 @@ class AnalysisManager {
 
     //------------------------------------------------
     // functions for controlling from the configuration file
-    // void setFileName(std::string val) { fFilename = val; }
-    // void saveTrack(G4bool val) { fSaveTrack = val; }
-
+    void setFileName(std::string val) { fFilename = val; }
+    void saveTrack(G4bool val) { fSaveTrack = val; }
 
     // build TID to primary ancestor association
     // filled progressively from StackingAction
@@ -47,10 +49,12 @@ class AnalysisManager {
     void bookEvtTree();
     void bookTrkTree();
     void bookPrimTree();
+    void bookFASER2Trees();
 
     void FillEventTree(const G4Event* event);
     void FillPrimariesTree(const G4Event* event);
     void FillTrajectoriesTree(const G4Event* event);
+    void FillFASER2Output();
     
     float_t GetTotalEnergy(float_t px, float_t py, float_t pz, float_t m);
 
@@ -64,6 +68,7 @@ class AnalysisManager {
     G4HCofThisEvent* fHCofEvent;
     
     G4int nPrimaryVertex;
+    std::vector<FPFParticle> primaries;
     std::vector<int> primaryIDs;
 
     //------------------------------------------------
@@ -73,11 +78,6 @@ class AnalysisManager {
     TTree*   fEvt;
     TTree*   fTrk;
     TTree*   fPrim;
-
-    TDirectory* fFLArEDir;
-    TTree*   fFLArEHits;
-	  TTree*	 fFLArEHCALHits;
-    TTree*   fFLArEPseudoReco; 
 
     TDirectory* fFASER2Dir;
     TTree*   fActsHitsTree;

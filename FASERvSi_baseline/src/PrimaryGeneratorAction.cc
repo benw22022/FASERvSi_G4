@@ -4,6 +4,7 @@
 #include "generators/GeneratorBase.hh"
 #include "generators/GENIEGenerator.hh"
 #include "generators/HepMCGenerator.hh"
+#include "generators/GPSGenerator.hh"
 
 #include "EventInformation.hh"
 
@@ -36,8 +37,8 @@ void PrimaryGeneratorAction::SetGenerator(G4String name)
     fGenerator = new GENIEGenerator();
   else if( name == "hepmc" )
     fGenerator = new HepMCGenerator();
-  // else if ( name == "gun" )
-  //   fGenerator = new GPSGenerator();
+  else if ( name == "gun" )
+    fGenerator = new GPSGenerator();
   else{
     G4String err = "Unknown generator option " + name;
     G4Exception("PrimaryGeneratorAction",

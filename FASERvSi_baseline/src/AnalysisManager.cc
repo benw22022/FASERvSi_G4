@@ -13,6 +13,7 @@
 #include <G4Poisson.hh>
 #include <G4Trajectory.hh>
 #include <G4LorentzVector.hh>
+#include "G4SDManager.hh"
 
 #include <TDirectory.h>
 #include <TFile.h>
@@ -22,9 +23,11 @@
 #include <TString.h>
 #include <Math/ProbFunc.h>
 
+#include "EventInformation.hh"
 #include "AnalysisManager.hh"
-#include "reco/ShowerLID.hh"
 #include "reco/Barcode.hh"
+#include "FPFParticle.hh"
+#include "SCTModuleHit.hh"
 
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
@@ -222,23 +225,8 @@ void AnalysisManager::BeginOfRun()
   bookPrimTree();
   if (fSaveTrack) bookTrkTree();
 
-  fSDNamelist = GeometricalParameters::Get()->GetSDNamelist();
-  G4cout << "Number of SDs : " << fSDNamelist.size() << G4endl;
-
-  // Loop through active sentive detectors
-  // book trees as necessary
-  for (auto sdname : fSDNamelist)
-  {
-    G4cout << sdname.first << " " << sdname.second << G4endl;}
-
-    // if FASER2 is enabled, book ACTS trees
-    // but give the option to disable output if required
-    else if (fSaveActs && sdname.second.find("FASER2") != std::string::npos )
-    {
-      fFaser2SDs.push_back(sdname.first);
-      bookFASER2Trees();
-    }
-  }
+  bookFASER2Trees();
+}
 
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
@@ -251,13 +239,10 @@ void AnalysisManager::EndOfRun()
   fPrim->Write();
   if (fSaveTrack) fTrk->Write();
 
-  if (fFaser2SDs.size()>0)
-  {
-    fFile->cd(fFASER2Dir->GetName());
-    fActsHitsTree->Write();
-    fActsParticlesTree->Write();
-    fFile->cd(); // go back to top
-  }
+  fFile->cd(fFASER2Dir->GetName());
+  fActsHitsTree->Write();
+  fActsParticlesTree->Write();
+  fFile->cd(); // go back to top
 
   fFile->Close();
 }
@@ -339,8 +324,7 @@ void AnalysisManager::EndOfEvent(const G4Event *event)
 
   //-----------------------------------------------------------
 
-  // FILL DETECTOR HITS 
-  if( fFaser2SDs.size() > 0 ) FillFASER2Output();
+  FillFASER2Output();
 
 }
 
@@ -507,114 +491,111 @@ void AnalysisManager::FillFASER2Output()
 
   // loop over the detected FASER2 sensitive volumes
   int nHits = 0;
-  for(const int sdId : fFaser2SDs )
+  auto sdManager = G4SDManager::GetSDMpointer();
+  G4int sdId = sdManager->GetCollectionID("strip_detector");
+  auto hitCollection = dynamic_cast<SCTModuleHitCollection*>(fHCofEvent->GetHC(sdId));
+  if (!hitCollection)
   {
-    //  Get and cast hit collection with LArBoxHits
-    std::string sdName = fSDNamelist.at(sdId);
-    auto hitCollection = dynamic_cast<FASER2TrackerHitsCollection *>(fHCofEvent->GetHC(sdId));
-    if (!hitCollection)
-    {
-      G4cout << "No hits recorded by " << sdName << G4endl;
-      continue;
-    }
-  
-    std::map<G4int, G4int> sub_part_map{};
-    for (auto hit : *hitCollection->GetVector())
-    {
-      if (hit->GetCharge() == 0)
-        continue; // skip neutral particles, they don't hit
-
-      /*
-      * A note on the ActsHitsGeometryID variable
-       This variable in Acts keeps track of an Acts::GeometryIdentifier. This is essentially a long unsigned int, the bits of which are used to
-       look up the the volume/layer/boundary/sensitive indices of a piece of geometry. In principle it should be possible to assign this variable
-       here in GEANT4 but I don't understand the Acts code well enough to do it without adding Acts as a dependancy to this codebase.
-       As a result I set `geometry_id` to zero and give the the resposibility of assigning this variable to the user during the reading of the `hits` tree.
-      */
-
-      nHits++;
-      ActsHitsEventID = evtID;
-      ActsHitsGeometryID = 0;
-
-      int hitID = hit->GetTrackID();
-      int nPrimaries = ActsParticlesParticleId.size();
-
-      auto particleId = ActsFatras::Barcode();
-      particleId.setVertexPrimary(1);
-      particleId.setVertexSecondary(0);
-      particleId.setParticle(hit->GetTrackID() - 1); // The track ID is the primary particle index plus one
-      particleId.setGeneration(hit->GetParentID());
-
-      sub_part_map.try_emplace(hit->GetTrackID() - 1, sub_part_map.size());
-
-      // This is a fudge - assumes that that the secondary particles are always sub-particles of the primary particle
-      particleId.setSubParticle(hit->GetParentID() == 0 ? 0 : sub_part_map[hit->GetTrackID() - 1]);
-      ActsHitsParticleID = particleId.value();
-
-      ActsHitsX = hit->GetX();
-      ActsHitsY = hit->GetY();
-      ActsHitsZ = hit->GetZ();
-      ActsHitsT = hit->GetT();
-      ActsHitsPx = hit->GetPx();
-      ActsHitsPy = hit->GetPy();
-      ActsHitsPz = hit->GetPz();
-      ActsHitsE = hit->GetEnergy();
-      ActsHitsDeltaPx = hit->GetDeltaPx();
-      ActsHitsDeltaPy = hit->GetDeltaPy();
-      ActsHitsDeltaPz = hit->GetDeltaPz();
-      ActsHitsDeltaE = hit->GetDeltaE();
-      ActsHitsIndex = hit->GetCopyNumSensor(); // index of layer: 0, 1, 2, ...
-
-      // These variables I'm not 100% sure about. I reverse engineered them by matching them to how they're set when writing the hits from the particle gun in Acts
-      // In principle with the right headers from Acts we could construct the geometry ID value here
-      ActsHitsVolumeID = 1;
-      ActsHitsBoundaryID = 0;
-      ActsHitsLayerID = (hit->GetCopyNumSensor() + 1) * 2; // Acts specfic layer ID, goes 2, 4, 6, ...
-      ActsHitsApproachID = 0;
-      ActsHitsSensitiveID = 1;
-      fActsHitsTree->Fill();
-
-      // Now fill the Acts particles tree
-      bool isDuplicate = false;
-      for (const auto &id : ActsParticlesParticleId)
-      {
-        if (id == particleId.value())
-        {
-          isDuplicate = true;
-        }
-      }
-      if (isDuplicate) continue; // Skip this particle if it's already been added
-
-      ActsParticlesParticleId.push_back(particleId.value());
-      ActsParticlesParticleType.push_back(hit->GetPDGID());
-      ActsParticlesProcess.push_back(0);
-      ActsParticlesVx.push_back(hit->GetTrackVertex().x());
-      ActsParticlesVy.push_back(hit->GetTrackVertex().y());
-      ActsParticlesVz.push_back(hit->GetTrackVertex().z());
-      ActsParticlesVt.push_back(0);
-      ActsParticlesPx.push_back(hit->GetTrackP4().px());
-      ActsParticlesPy.push_back(hit->GetTrackP4().py());
-      ActsParticlesPz.push_back(hit->GetTrackP4().pz());
-      ActsParticlesM.push_back(hit->GetTrackP4().m());
-      ActsParticlesQ.push_back(hit->GetCharge());
-
-      ActsParticlesEta.push_back(hit->GetTrackP4().eta());
-      ActsParticlesPhi.push_back(hit->GetTrackP4().phi());
-      ActsParticlesPt.push_back(pow(pow(hit->GetTrackP4().px(), 2) + pow(hit->GetTrackP4().py(), 2), 0.5));
-      ActsParticlesP.push_back(pow(pow(hit->GetTrackP4().px(), 2) + pow(hit->GetTrackP4().py(), 2) + pow(hit->GetTrackP4().pz(), 2), 0.5));
-      ActsParticlesVertexPrimary.push_back(hit->GetIsPrimaryTrack());     //? These variables need to be filled, but are unused by Acts
-      ActsParticlesVertexSecondary.push_back(hit->GetIsSecondaryTrack()); //? These variables need to be filled, but are unused by Acts
-      ActsParticlesParticle.push_back(1);                                 //? These variables need to be filled, but are unused by Acts
-      ActsParticlesGeneration.push_back(0);                               //? These variables need to be filled, but are unused by Acts
-      ActsParticlesSubParticle.push_back(0);                              //? These variables need to be filled, but are unused by Acts
-      ActsParticlesELoss.push_back(0);                                    //? These variables need to be filled, but are unused by Acts
-      ActsParticlesPathInX0.push_back(0);                                 //? These variables need to be filled, but are unused by Acts
-      ActsParticlesPathInL0.push_back(0);                                 //? These variables need to be filled, but are unused by Acts
-      ActsParticlesNumberOfHits.push_back(0);                             //? These variables need to be filled, but are unused by Acts
-      ActsParticlesOutcome.push_back(0);                                  //? These variables need to be filled, but are unused by Acts
-    } // end of loop over hits
-    fActsParticlesTree->Fill();
+    G4cout << "No hits recorded by " << "strip_detector" << G4endl;
+    return;
   }
+  
+  std::map<G4int, G4int> sub_part_map{};
+  for (auto hit : *hitCollection->GetVector())
+  {
+    if (hit->GetCharge() == 0)
+      continue; // skip neutral particles, they don't hit
+
+    /*
+    * A note on the ActsHitsGeometryID variable
+      This variable in Acts keeps track of an Acts::GeometryIdentifier. This is essentially a long unsigned int, the bits of which are used to
+      look up the the volume/layer/boundary/sensitive indices of a piece of geometry. In principle it should be possible to assign this variable
+      here in GEANT4 but I don't understand the Acts code well enough to do it without adding Acts as a dependancy to this codebase.
+      As a result I set `geometry_id` to zero and give the the resposibility of assigning this variable to the user during the reading of the `hits` tree.
+    */
+
+    nHits++;
+    ActsHitsEventID = evtID;
+    ActsHitsGeometryID = 0;
+
+    int hitID = hit->GetTrackID();
+    int nPrimaries = ActsParticlesParticleId.size();
+
+    auto particleId = ActsFatras::Barcode();
+    particleId.setVertexPrimary(1);
+    particleId.setVertexSecondary(0);
+    particleId.setParticle(hit->GetTrackID() - 1); // The track ID is the primary particle index plus one
+    particleId.setGeneration(hit->GetParentID());
+
+    sub_part_map.try_emplace(hit->GetTrackID() - 1, sub_part_map.size());
+
+    // This is a fudge - assumes that that the secondary particles are always sub-particles of the primary particle
+    particleId.setSubParticle(hit->GetParentID() == 0 ? 0 : sub_part_map[hit->GetTrackID() - 1]);
+    ActsHitsParticleID = particleId.value();
+
+    ActsHitsX = hit->GetX();
+    ActsHitsY = hit->GetY();
+    ActsHitsZ = hit->GetZ();
+    ActsHitsT = hit->GetT();
+    ActsHitsPx = hit->GetPx();
+    ActsHitsPy = hit->GetPy();
+    ActsHitsPz = hit->GetPz();
+    ActsHitsE = hit->GetEnergy();
+    ActsHitsDeltaPx = hit->GetDeltaPx();
+    ActsHitsDeltaPy = hit->GetDeltaPy();
+    ActsHitsDeltaPz = hit->GetDeltaPz();
+    ActsHitsDeltaE = hit->GetDeltaE();
+    ActsHitsIndex = hit->GetCopyNumSensor(); // index of layer: 0, 1, 2, ...
+
+    // These variables I'm not 100% sure about. I reverse engineered them by matching them to how they're set when writing the hits from the particle gun in Acts
+    // In principle with the right headers from Acts we could construct the geometry ID value here
+    ActsHitsVolumeID = 1;
+    ActsHitsBoundaryID = 0;
+    ActsHitsLayerID = (hit->GetCopyNumSensor() + 1) * 2; // Acts specfic layer ID, goes 2, 4, 6, ...
+    ActsHitsApproachID = 0;
+    ActsHitsSensitiveID = 1;
+    fActsHitsTree->Fill();
+
+    // Now fill the Acts particles tree
+    bool isDuplicate = false;
+    for (const auto &id : ActsParticlesParticleId)
+    {
+      if (id == particleId.value())
+      {
+        isDuplicate = true;
+      }
+    }
+    if (isDuplicate) continue; // Skip this particle if it's already been added
+
+    ActsParticlesParticleId.push_back(particleId.value());
+    ActsParticlesParticleType.push_back(hit->GetPDGID());
+    ActsParticlesProcess.push_back(0);
+    ActsParticlesVx.push_back(hit->GetTrackVertex().x());
+    ActsParticlesVy.push_back(hit->GetTrackVertex().y());
+    ActsParticlesVz.push_back(hit->GetTrackVertex().z());
+    ActsParticlesVt.push_back(0);
+    ActsParticlesPx.push_back(hit->GetTrackP4().px());
+    ActsParticlesPy.push_back(hit->GetTrackP4().py());
+    ActsParticlesPz.push_back(hit->GetTrackP4().pz());
+    ActsParticlesM.push_back(hit->GetTrackP4().m());
+    ActsParticlesQ.push_back(hit->GetCharge());
+
+    ActsParticlesEta.push_back(hit->GetTrackP4().eta());
+    ActsParticlesPhi.push_back(hit->GetTrackP4().phi());
+    ActsParticlesPt.push_back(pow(pow(hit->GetTrackP4().px(), 2) + pow(hit->GetTrackP4().py(), 2), 0.5));
+    ActsParticlesP.push_back(pow(pow(hit->GetTrackP4().px(), 2) + pow(hit->GetTrackP4().py(), 2) + pow(hit->GetTrackP4().pz(), 2), 0.5));
+    ActsParticlesVertexPrimary.push_back(hit->GetIsPrimaryTrack());     //? These variables need to be filled, but are unused by Acts
+    ActsParticlesVertexSecondary.push_back(hit->GetIsSecondaryTrack()); //? These variables need to be filled, but are unused by Acts
+    ActsParticlesParticle.push_back(1);                                 //? These variables need to be filled, but are unused by Acts
+    ActsParticlesGeneration.push_back(0);                               //? These variables need to be filled, but are unused by Acts
+    ActsParticlesSubParticle.push_back(0);                              //? These variables need to be filled, but are unused by Acts
+    ActsParticlesELoss.push_back(0);                                    //? These variables need to be filled, but are unused by Acts
+    ActsParticlesPathInX0.push_back(0);                                 //? These variables need to be filled, but are unused by Acts
+    ActsParticlesPathInL0.push_back(0);                                 //? These variables need to be filled, but are unused by Acts
+    ActsParticlesNumberOfHits.push_back(0);                             //? These variables need to be filled, but are unused by Acts
+    ActsParticlesOutcome.push_back(0);                                  //? These variables need to be filled, but are unused by Acts
+  } // end of loop over hits
+  fActsParticlesTree->Fill();
 
   G4cout << "Total FASER2 recorded hits: " << nHits << G4endl;
 }

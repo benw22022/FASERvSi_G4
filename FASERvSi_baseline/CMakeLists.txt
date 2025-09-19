@@ -29,6 +29,14 @@ include(${Geant4_USE_FILE})
 find_package(HepMC3 REQUIRED)
 # find_package(HepMC REQUIRED)
 
+#----------------------------------------------------------------------------
+# Find ROOT (required package)
+#
+find_package(ROOT REQUIRED COMPONENTS Geom EG RIO) 
+include(${ROOT_USE_FILE})
+message(STATUS "Set ROOT : ${ROOT_USE_FILE}")
+message(STATUS "ROOT : ${ROOT_LIBRARIES}")
+
 ##----------------------------------------------------------------------------
 ## Find Pythia6 (optional package)
 ##
@@ -45,9 +53,15 @@ find_package(HepMC3 REQUIRED)
 #
 include_directories(${PROJECT_SOURCE_DIR}/include 
                     ${Geant4_INCLUDE_DIR}
-                    ${HEPMC3_INCLUDE_DIR})
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
+                    ${HEPMC3_INCLUDE_DIR}
+                    ${ROOT_INCLUDE_DIR})
+
+file(GLOB_RECURSE sources ${PROJECT_SOURCE_DIR}/src/*.cc 
+                    ${PROJECT_SOURCE_DIR}/src/reco/*.cc
+                    ${PROJECT_SOURCE_DIR}/src/generators/*.cc)
+file(GLOB_RECURSE headers ${PROJECT_SOURCE_DIR}/include/*.hh 
+                          ${PROJECT_SOURCE_DIR}/include/reco/*.hh
+                          ${PROJECT_SOURCE_DIR}/include/generators/*.hh)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
@@ -58,7 +72,7 @@ add_executable(FASERvSi_baseline FASERvSi_baseline.cc ${sources} ${headers})
 #                      ${PYTHIA6_LIBRARIES} gfortran)
 target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}
                       ${HEPMC3_LIBRARIES} ${HEPMC3_FIO_LIBRARIES} ${HEPMC3_LIB}
-                      ${PYTHIA6_LIBRARIES})
+                      ${PYTHIA6_LIBRARIES} ${ROOT_LIBRARIES})
 
 # if pythia is compiled with g77, link with -lg2c instead.
 #target_link_libraries(FASERvSi_baseline ${Geant4_LIBRARIES}

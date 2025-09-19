@@ -15,9 +15,9 @@ EventAction::EventAction() :
 {
   // Register created accumulables
   G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
-  accumulableManager->RegisterAccumulable(fNPrimaryTrack);
-  accumulableManager->RegisterAccumulable(fNSecondaryTrack);
-  accumulableManager->RegisterAccumulable(fNSecondaryTrackNotGamma);
+  accumulableManager->Register(fNPrimaryTrack);
+  accumulableManager->Register(fNSecondaryTrack);
+  accumulableManager->Register(fNSecondaryTrackNotGamma);
 }
 
 EventAction::~EventAction() {;}
