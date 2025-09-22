@@ -59,13 +59,13 @@ class AnalysisManager {
     float_t GetTotalEnergy(float_t px, float_t py, float_t pz, float_t m);
 
     static AnalysisManager* fInstance;
-    AnalysisManagerMessenger* fMessenger;
+    AnalysisManagerMessenger* fMessenger{nullptr};
 
     G4bool fSaveTrack;
     
     std::map<int, std::string> fSDNamelist;
 
-    G4HCofThisEvent* fHCofEvent;
+    G4HCofThisEvent* fHCofEvent{nullptr};
     
     G4int nPrimaryVertex;
     std::vector<FPFParticle> primaries;

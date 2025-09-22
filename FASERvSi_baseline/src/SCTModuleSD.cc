@@ -1,7 +1,11 @@
 #include "SCTModuleDetector.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4SDManager.hh"
+#include "G4RunManager.hh"
 #include "SCTModuleHit.hh"
+#include "reco/Channel.hh"
+
+
 
 SCTModuleDetector::SCTModuleDetector(G4String name) :
   G4VSensitiveDetector(name) {
@@ -15,6 +19,10 @@ SCTModuleDetector::~SCTModuleDetector(){}
 void SCTModuleDetector::Initialize(G4HCofThisEvent *HCE) {
   G4cout << "Initializing SCTModuleDetector" << G4endl;
   fHitCollection = new SCTModuleHitsCollection(GetName(), collectionName[0]);
+
+  auto *runManager = G4RunManager::GetRunManager();
+  fDetector = (DetectorConstruction*) (runManager->GetUserDetectorConstruction());
+
 
   // if (fHCID < 0) { fHCID = GetCollectionID(0); }
   // HCE->AddHitsCollection(fHCID, fHitCollection);
@@ -32,6 +40,8 @@ void SCTModuleDetector::EndOfEvent(G4HCofThisEvent *HCE) {
 
   HCE->AddHitsCollection(fHCID, fHitCollection);
   fTrackIDRecord.clear(); // Clear the track ID record for each event
+  std::cout << "Number of hits in this event: " << fNHits << std::endl;
+  fNHits = 0;
 }
 
 
@@ -42,6 +52,9 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   //track->SetTrackStatus(fStopAndKill);
   G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
   G4StepPoint *postStepPoint = aStep->GetPostStepPoint();
+  G4double charge = track->GetDynamicParticle()->GetCharge();
+
+  if (charge == 0) return false; // skip neutral particles, they don't hit
 
   G4String volName = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetName();
   // G4cout << "Hit volume: " << volName << G4endl;
@@ -53,27 +66,32 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   G4double py = track->GetDynamicParticle()->Get4Momentum().py();
   G4double pz = track->GetDynamicParticle()->Get4Momentum().pz();
   G4double m = track->GetDynamicParticle()->Get4Momentum().m();
-  G4double charge = track->GetDynamicParticle()->GetCharge();
+  // G4double charge = track->GetDynamicParticle()->GetCharge();
   G4double time = track->GetDynamicParticle()->Get4Momentum().t();
   G4ThreeVector delta_momentum = aStep->GetDeltaMomentum();
   G4double delta_energy = aStep->GetDeltaEnergy();
-  G4int sensor_id = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber();
 
   G4int strip_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(0);
   G4int strip_side = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(1);
   G4int module_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(2);
   G4int layer_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(3);
 
-  
+  Channel channel;
+  channel.setStrip(strip_number);
+  channel.setSide(strip_side);
+  channel.setModule(module_number);
+  channel.setLayer(layer_number);
+
   G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
   G4ThreeVector sensorCenterGlobal = touchable->GetTranslation();
   G4double sensorCentreZ = sensorCenterGlobal.z();
 
-  // for (int i = 0; i <= touchable->GetHistoryDepth(); ++i) {
-  //   G4String volName = touchable->GetVolume(i)->GetName();
-  //   G4int copyNum = touchable->GetCopyNumber(i);
-  //   G4cout << "Level " << i << ": " << volName << " (copy " << copyNum << ")" << G4endl;
-  // }
+  G4cout << G4endl;
+  for (int i = 0; i <= touchable->GetHistoryDepth(); ++i) {
+    G4String volName = touchable->GetVolume(i)->GetName();
+    G4int copyNum = touchable->GetCopyNumber(i);
+    G4cout << "Level " << i << ": " << volName << " (copy " << copyNum << ")" << G4endl;
+  }
 
   SCTModuleHit* tmpHit = new SCTModuleHit();
 
@@ -94,7 +112,6 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   tmpHit->SetMass(m/GeV);
   tmpHit->SetTrackID(track->GetTrackID());
   tmpHit->SetParentID(track->GetParentID());
-  tmpHit->SetCopyNumSensor(sensor_id);
   tmpHit->SetStripNumber(strip_number);
   tmpHit->SetStripSide(strip_side);
   tmpHit->SetModuleNumber(module_number);
@@ -112,6 +129,7 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   }
 
   // Check if this sensor has already been hit by this track
+  G4int sensor_id = channel.value(); // Unique identifier for the sensor based on strip, side, module, layer
   if (fTrackIDRecord.find(sensor_id) != fTrackIDRecord.end()) 
   {
     std::vector<G4int> tracks_that_hit_sensor = fTrackIDRecord[sensor_id];
@@ -127,6 +145,7 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   }
 
   fHitCollection->insert(tmpHit);
+  fNHits++;
   
   return 0;
 }

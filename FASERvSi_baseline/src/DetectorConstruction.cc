@@ -244,8 +244,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   //* SCT module and tracking layers
   SCTModuleGeometry sctModule = SCTModuleGeometry();
-  // fSCT_strip_log = sctModule.GetStripLogical();
-  fSCT_strip_log = sctModule.GetTruthTrackerPlaneLogical();
+  fSCT_strip_log = sctModule.GetStripLogical();
+  // fSCT_strip_log = sctModule.GetTruthTrackerPlaneLogical();
   G4LogicalVolume* tracking_hoz_layer_log = constructHozTrackingLayerLogical(sctModule);
   G4LogicalVolume* tracking_vert_layer_log = constructVertTrackingLayerLogical(sctModule);
   G4Box* tracking_layer_box = dynamic_cast<G4Box*>(tracking_vert_layer_log->GetSolid());
