@@ -1,5 +1,6 @@
 #include "SCTModuleDetector.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4SDManager.hh"
 #include "SCTModuleHit.hh"
 
 SCTModuleDetector::SCTModuleDetector(G4String name) :
@@ -15,15 +16,23 @@ void SCTModuleDetector::Initialize(G4HCofThisEvent *HCE) {
   G4cout << "Initializing SCTModuleDetector" << G4endl;
   fHitCollection = new SCTModuleHitsCollection(GetName(), collectionName[0]);
 
-  if (fHCID < 0) { fHCID = GetCollectionID(0); }
-  HCE->AddHitsCollection(fHCID, fHitCollection);
-  fTrackIDRecord.clear(); // Clear the track ID record for each event
+  // if (fHCID < 0) { fHCID = GetCollectionID(0); }
+  // HCE->AddHitsCollection(fHCID, fHitCollection);
+  // fTrackIDRecord.clear(); // Clear the track ID record for each event
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-// void SCTModuleDetector::EndOfEvent(G4HCofThisEvent *) {
-// }
+void SCTModuleDetector::EndOfEvent(G4HCofThisEvent *HCE) {
+
+  if (fHCID < 0) 
+  { 
+    fHCID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
+  }
+
+  HCE->AddHitsCollection(fHCID, fHitCollection);
+  fTrackIDRecord.clear(); // Clear the track ID record for each event
+}
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -18,23 +18,18 @@ SCTModuleGeometry::SCTModuleGeometry()
     fStrip_indiv_log = new G4LogicalVolume(fStrip_indiv, fSilicon, "strip_inidv_log", 0,0,0);
     fStrip_div = new G4PVDivision("strip_div", fStrip_indiv_log, fStrip_plane_log, kXAxis, fNstrips, 0 );
     
-    // Set visibility attributes for bounding box
-    G4VisAttributes* boxVisAtt = new G4VisAttributes(G4Colour::Brown());
-    boxVisAtt->SetForceWireframe(true);
-    boxVisAtt->SetVisibility(false);
-    fModule_log->SetVisAttributes(boxVisAtt);
-
-    // Set visibility attributes for silicon planes
-    G4VisAttributes* strip_planeVisAtt = new G4VisAttributes(G4Colour::Green());
-    // strip_planeVisAtt->SetForceWireframe(true);
-    strip_planeVisAtt->SetForceSolid(true);
-    fStrip_plane_log->SetVisAttributes(strip_planeVisAtt);
-
-    // Make individual strips invisible in visualization (too many to display usefully)
-    G4VisAttributes* strip_invis = new G4VisAttributes();
-    strip_invis->SetVisibility(false);
-    fStrip_indiv_log->SetVisAttributes(strip_invis);
-
+    // Create a tracking plane that we can set to be senstive to record truth hits
+    G4Box* fTruthTrackerPlane = new G4Box("truth_tracker_plane", x_bounds/2, y_bounds/2, 0.1*mm);  // Very thin box
+    fTruthTrackerPlane_log = new G4LogicalVolume(fTruthTrackerPlane, fAir, "truth_tracker_plane_log", 0,0,0);
+    G4VPhysicalVolume* truth_tracker_plane_phys = new G4PVPlacement(
+        0, 
+        G4ThreeVector(0, 0, 0), 
+        fTruthTrackerPlane_log, 
+        "truth_tracker_plane_phys", 
+        fModule_log, 
+        false, 
+        0);
+        
     // Place the two strip planes inside the module bounding box
     G4VPhysicalVolume* strip_plane_side1_phys = new G4PVPlacement(
         0, 
@@ -56,6 +51,24 @@ SCTModuleGeometry::SCTModuleGeometry()
         fModule_log,
         false, 
         1);
+
+    // Set visibility attributes for bounding box
+    G4VisAttributes* boxVisAtt = new G4VisAttributes(G4Colour::Brown());
+    boxVisAtt->SetForceWireframe(true);
+    boxVisAtt->SetVisibility(false);
+    fModule_log->SetVisAttributes(boxVisAtt);
+    fTruthTrackerPlane_log->SetVisAttributes(boxVisAtt);
+
+    // Set visibility attributes for silicon planes
+    G4VisAttributes* strip_planeVisAtt = new G4VisAttributes(G4Colour::Green());
+    // strip_planeVisAtt->SetForceWireframe(true);
+    strip_planeVisAtt->SetForceSolid(true);
+    fStrip_plane_log->SetVisAttributes(strip_planeVisAtt);
+
+    // Make individual strips invisible in visualization (too many to display usefully)
+    G4VisAttributes* strip_invis = new G4VisAttributes();
+    strip_invis->SetVisibility(false);
+    fStrip_indiv_log->SetVisAttributes(strip_invis);
 }
 
 G4VPhysicalVolume* SCTModuleGeometry::PlaceModule(G4LogicalVolume* mother_log, const G4ThreeVector& position, G4RotationMatrix* rotation, G4int copyNo) const

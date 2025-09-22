@@ -13,6 +13,9 @@ public:
   SCTModuleHit(){};
   ~SCTModuleHit(){};
 
+  inline void* operator new(size_t);
+  inline void operator delete(void*);
+
   ///// Get hit ID calculated as 1000 * sensorID + cellID
   //G4int ID() { return 1000 * fCopyNumSensor + fCopyNumCell; }
   inline void SetPosition(G4double x, G4double y, G4double z) {
@@ -191,6 +194,22 @@ private:
 
 };
 
-typedef G4THitsCollection<SCTModuleHit> SCTModuleHitCollection;
+using SCTModuleHitCollection = G4THitsCollection<SCTModuleHit>;
+extern G4ThreadLocal G4Allocator<SCTModuleHit> *hitAllocator;
+
+inline void* SCTModuleHit::operator new(size_t) {
+  if (!hitAllocator) {
+    hitAllocator = new G4Allocator<SCTModuleHit>;
+  }
+  return hitAllocator->MallocSingle();
+}
+
+inline void SCTModuleHit::operator delete(void* aHit) {
+  if (!hitAllocator) {
+    hitAllocator = new G4Allocator<SCTModuleHit>;
+  }
+  hitAllocator->FreeSingle((SCTModuleHit*) aHit);
+}
+
 
 #endif /* EXN04DETECTORHIT_HH */

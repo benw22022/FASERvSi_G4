@@ -304,7 +304,6 @@ void AnalysisManager::EndOfEvent(const G4Event *event)
   G4cout << "Ending event, filling output trees" << G4endl;
   /// evtID
   evtID = event->GetEventID();
-  FillHitsOutput();
 
   // FILL EVENT TREE
   FillEventTree(event);
@@ -325,6 +324,8 @@ void AnalysisManager::EndOfEvent(const G4Event *event)
     G4cout << "No hits recorded in any sensitive volume --> nothing to save!" << G4endl;
     return;
   }
+
+  FillHitsOutput();
 
   //-----------------------------------------------------------
 
@@ -504,7 +505,15 @@ void AnalysisManager::FillHitsOutput()
   G4cout << "Looking for hit collection with ID " << sdId << G4endl;
   
   G4cout  << "fHCofEvent->GetHC(" << sdId<<") = " << fHCofEvent->GetHC(sdId) << G4endl;
-  auto hitCollection = dynamic_cast<G4THitsCollection<SCTModuleHit>*>(fHCofEvent->GetHC(sdId));
+
+  if (!fHCofEvent) {
+      G4cerr << "Null HCofThisEvent at event " << G4endl;
+      return;
+  }
+  G4int nHC = fHCofEvent->GetNumberOfCollections();
+  G4cerr << "HCofThisEvent has " << nHC << " collections" << G4endl;
+
+  auto hitCollection = dynamic_cast<SCTModuleHitCollection*>(fHCofEvent->GetHC(sdId));
   G4cout << "Done dynamic cast of hist collection" << G4endl;
 
   G4cout << "Found hit collection with ID " << sdId << G4endl;

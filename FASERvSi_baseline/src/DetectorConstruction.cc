@@ -244,7 +244,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   //* SCT module and tracking layers
   SCTModuleGeometry sctModule = SCTModuleGeometry();
-  fSCT_strip_log = sctModule.GetStripLogical();
+  // fSCT_strip_log = sctModule.GetStripLogical();
+  fSCT_strip_log = sctModule.GetTruthTrackerPlaneLogical();
   G4LogicalVolume* tracking_hoz_layer_log = constructHozTrackingLayerLogical(sctModule);
   G4LogicalVolume* tracking_vert_layer_log = constructVertTrackingLayerLogical(sctModule);
   G4Box* tracking_layer_box = dynamic_cast<G4Box*>(tracking_vert_layer_log->GetSolid());
@@ -306,6 +307,8 @@ void DetectorConstruction::ConstructSDandField(){
   G4SDManager *sdman = G4SDManager::GetSDMpointer();
   std::string detName = "strip_detector";
   SCTModuleDetector* sensDet = new SCTModuleDetector(detName);
+
+  G4cout << "Attaching sensitive detector to logical volume " << fSCT_strip_log->GetName() << " at address " << fSCT_strip_log << G4endl;
   fSCT_strip_log->SetSensitiveDetector(sensDet);
   sdman->AddNewDetector(sensDet);
 

@@ -26,6 +26,7 @@ class SCTModuleGeometry {
         G4LogicalVolume* GetModuleLogical() const { return fModule_log; };
         G4LogicalVolume* GetStripLogical() const { return fStrip_indiv_log; };
         G4LogicalVolume* GetStripPlaneLogical() const { return fStrip_plane_log; };
+        G4LogicalVolume* GetTruthTrackerPlaneLogical() const { return fTruthTrackerPlane_log; };
         G4VPhysicalVolume* PlaceModule(G4LogicalVolume* mother_log, const G4ThreeVector& position, G4RotationMatrix* rotation, G4int copyNo) const;
 
     private:
@@ -37,6 +38,7 @@ class SCTModuleGeometry {
         G4double fPlaneSeparation = 6.51*mm;
 
         G4Box* fModuleBoundingBox;
+        G4LogicalVolume* fTruthTrackerPlane_log;
         G4LogicalVolume* fModule_log;
         G4LogicalVolume* fStrip_plane_log;
         G4LogicalVolume* fStrip_indiv_log;

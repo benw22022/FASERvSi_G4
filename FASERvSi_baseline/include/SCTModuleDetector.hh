@@ -19,14 +19,14 @@ public:
   void Initialize(G4HCofThisEvent *HCE);
   /// Temporary map of hits is stored in hit collection, to be retrieved
   /// for analysis by the event action
-  // void EndOfEvent(G4HCofThisEvent *HCE);
+  void EndOfEvent(G4HCofThisEvent *HCE);
 
   G4bool ProcessHits(G4Step*, G4TouchableHistory*);
 
 private:
   /// Hit collection stored in the event, filled in at the end of event based
   /// on temporary hits
-  SCTModuleHitsCollection *fHitCollection = nullptr;
+  SCTModuleHitsCollection *fHitCollection{nullptr};
   /// ID of hit collection
   G4int fHCID = -1;
   // Container to store the track IDs of the tracks which have hit this SD
