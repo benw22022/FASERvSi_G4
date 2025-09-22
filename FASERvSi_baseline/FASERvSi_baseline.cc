@@ -43,8 +43,8 @@
 #include "RunAction.hh"
 #include "StackingAction.hh"
 #include "SteppingAction.hh"
-#include "SteppingVerbose.hh"
 #include "TrackingAction.hh"
+#include "ActionInitialization.hh"
 
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
@@ -57,43 +57,21 @@ int main(int argc,char** argv)
     ui = new G4UIExecutive(argc, argv);
   }
 
-  // User Verbose output class
-  G4VSteppingVerbose* verbosity = new SteppingVerbose;
-  G4VSteppingVerbose::SetInstance(verbosity);
-
   // Serial only Run manager
   //
   auto* runManager = G4RunManagerFactory::CreateRunManager(G4RunManagerType::SerialOnly);
 
   // User Initialization classes (mandatory)
   //
-  G4VUserDetectorConstruction* detector = new DetectorConstruction;
-  runManager->SetUserInitialization(detector);
+  runManager->SetUserInitialization(new DetectorConstruction());
   //
   G4VUserPhysicsList* physics = new FTFP_BERT;
   runManager->SetUserInitialization(physics);
 
   runManager->Initialize();
 
-  // User Action classes
-  //
-  G4VUserPrimaryGeneratorAction* gen_action = new PrimaryGeneratorAction;
-  runManager->SetUserAction(gen_action);
-  //
-  G4UserRunAction* run_action = new RunAction;
-  runManager->SetUserAction(run_action);
-  //
-  G4UserEventAction* event_action = new EventAction;
-  runManager->SetUserAction(event_action);
-  //
-  G4UserStackingAction* stacking_action = new StackingAction;
-  //runManager->SetUserAction(stacking_action);
-  //
-  G4UserTrackingAction* tracking_action = new TrackingAction;
-  runManager->SetUserAction(tracking_action);
-  //
-  G4UserSteppingAction* stepping_action = new SteppingAction;
-  runManager->SetUserAction(stepping_action);
+  // User Action classes  //
+  runManager->SetUserInitialization(new ActionInitialization());
 
   runManager->Initialize();
 
@@ -124,5 +102,4 @@ int main(int argc,char** argv)
 
   delete visManager;
   delete runManager;
-  delete verbosity;
 }

@@ -1,81 +1,55 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file eventgenerator/HepMC/HepMCEx01/src/SteppingAction.cc
-/// \brief Implementation of the SteppingAction class
-//
-//
-
-#include "G4SteppingManager.hh"
-#include "G4Track.hh"
-#include "G4Step.hh"
-#include "G4StepPoint.hh"
-#include "G4TrackStatus.hh"
-#include "G4VPhysicalVolume.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTypes.hh"
 #include "SteppingAction.hh"
+#include "RunAction.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-SteppingAction::SteppingAction()
- : G4UserSteppingAction()
+#include <G4Step.hh>
+#include <G4Electron.hh>
+#include <G4TrackStatus.hh>
+#include <G4SystemOfUnits.hh>
+
+#include <TMath.h>
+
+SteppingAction::SteppingAction(RunAction* runAction)
+  : fRunAction(runAction)
 {
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-SteppingAction::~SteppingAction()
-{
+void SteppingAction::UserSteppingAction(const G4Step* aStep) {
+
+  //TrackLiveDebugging(aStep);
+
+  G4Track* aTrack = aStep->GetTrack();
+  G4ThreeVector post_pos = aStep->GetPostStepPoint()->GetPosition();
+
+  // if the track is out of the active volumes/area, kill this track
+  G4VPhysicalVolume* volume = aStep->GetPostStepPoint()->GetTouchable()->GetVolume();
+
+  if( volume->GetName() == "expHall_P" ) aTrack->SetTrackStatus(G4TrackStatus::fStopAndKill);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void SteppingAction::UserSteppingAction(const G4Step * theStep)
-{
-  G4Track* theTrack = theStep->GetTrack();
+void SteppingAction::TrackLiveDebugging(const G4Step* step){
 
-  // check if it is alive
-  if(theTrack->GetTrackStatus()!=fAlive) { return; }
+  G4Track* track = step->GetTrack();
 
-  // check if it is primary
-  if(theTrack->GetParentID()!=0) { return; }
+  if( track->GetTrackStatus() != fAlive && track->GetTrackStatus() != fStopButAlive) return;
 
-  // check if it is NOT muon
-  G4ParticleDefinition * particleType = theTrack->GetDefinition();
-  if((particleType==G4MuonPlus::MuonPlusDefinition())
-   ||(particleType==G4MuonMinus::MuonMinusDefinition()))
-  { return; }
+  G4LogicalVolume* volume = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
+  G4LogicalVolume* volume_after = step->GetPostStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
 
-  // check if it is entering to the calorimeter volume
-  G4StepPoint * thePrePoint = theStep->GetPreStepPoint();
-  G4VPhysicalVolume * thePrePV = thePrePoint->GetPhysicalVolume();
-  G4String thePrePVname = thePrePV->GetName();
-  if(thePrePVname.substr(0,4)=="calo") { return; }
-  G4StepPoint * thePostPoint = theStep->GetPostStepPoint();
-  G4VPhysicalVolume * thePostPV = thePostPoint->GetPhysicalVolume();
-  G4String thePostPVname = thePostPV->GetName();
-  if(thePostPVname.substr(0,4)!="calo") { return; }
+  G4ThreeVector pre_pos = step->GetPreStepPoint()->GetPosition();
+  G4ThreeVector post_pos = step->GetPostStepPoint()->GetPosition();
+  G4ThreeVector pre_mom = step->GetPreStepPoint()->GetMomentum();
+  G4ThreeVector post_mom = step->GetPostStepPoint()->GetMomentum();
+  G4double edep = step->GetTotalEnergyDeposit();
 
-  // then suspend the track
-  theTrack->SetTrackStatus(fSuspend);
+  int PDG = track->GetParticleDefinition()->GetPDGEncoding();
+  G4String ParticleName = track->GetDynamicParticle()->GetParticleDefinition()->GetParticleName();
+  int TID = track->GetTrackID();
+  int SID = step->GetTrack()->GetCurrentStepNumber();
+
+  std::cout << "Track " << TID << " - " << "PDG " << PDG << " " << ParticleName << std::endl;
+  std::cout << "stepping... " << SID << " edep" << edep << std::endl;
+  std::cout << "(" << pre_pos.x() << "," << pre_pos.y() << "," << pre_pos.z() << ") in " << volume->GetName();
+  std::cout << " ---> "  << "(" << post_pos.x() << "," << post_pos.y() << "," << post_pos.z() << ") in " << volume_after->GetName() << std::endl;
+  std::cout << "momentum: (" << pre_mom.x() << "," << pre_mom.y() << "," << pre_mom.z() << ") ---> (";
+  std::cout << post_mom.x() << "," << post_mom.y() << "," << post_mom.z() << ")" << std::endl;
 }

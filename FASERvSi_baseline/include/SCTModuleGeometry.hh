@@ -25,6 +25,7 @@ class SCTModuleGeometry {
         G4Box* GetModuleBox() const { return fModuleBoundingBox; };
         G4LogicalVolume* GetModuleLogical() const { return fModule_log; };
         G4LogicalVolume* GetStripLogical() const { return fStrip_indiv_log; };
+        G4LogicalVolume* GetStripPlaneLogical() const { return fStrip_plane_log; };
         G4VPhysicalVolume* PlaceModule(G4LogicalVolume* mother_log, const G4ThreeVector& position, G4RotationMatrix* rotation, G4int copyNo) const;
 
     private:

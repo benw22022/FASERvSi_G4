@@ -1,44 +1,108 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-/// \file eventgenerator/HepMC/HepMCEx01/src/TrackingAction.cc
-/// \brief Implementation of the TrackingAction class
-//
-//
-
-#include "G4Track.hh"
-#include "G4TrackingManager.hh"
 #include "TrackingAction.hh"
+#include "TrackInformation.hh"
+#include "AnalysisManager.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "G4TrackingManager.hh"
+#include "G4Track.hh"
+
+TrackingAction::TrackingAction() : G4UserTrackingAction() {;}
+
 void TrackingAction::PreUserTrackingAction(const G4Track* aTrack)
 {
-  // Create trajectory only for primaries
-  if ( aTrack-> GetParentID() == 0 ) {
-    fpTrackingManager->SetStoreTrajectory(true);
-  } else {
-    fpTrackingManager->SetStoreTrajectory(false);
+}
+
+void TrackingAction::PostUserTrackingAction(const G4Track* aTrack)
+{
+  if (aTrack->GetParentID()==0) 
+  {
+    AnalysisManager::GetInstance()->AddOnePrimaryTrack();
   }
+  if (aTrack->GetParentID()==0) 
+  {
+    if (aTrack->GetParticleDefinition()->GetPDGEncoding()==111) 
+    {
+      // in case of pizero in the list of primary track
+      // its decay products are also counted as primary particles, mostly 2 gammas
+      G4TrackVector* secondaries = fpTrackingManager->GimmeSecondaries();
+      if (secondaries) 
+      {
+        size_t nSeco = secondaries->size();
+        if (nSeco>0) 
+        {
+          for (size_t i=0; i<nSeco; ++i) 
+          {
+            if ((*secondaries)[i]->GetCreatorProcess()->GetProcessName()=="Decay") 
+            {
+              TrackInformation* info =  new TrackInformation();
+              info->SetTrackIsFromPrimaryPizero(1);
+              (*secondaries)[i]->SetUserInformation(info);
+              AnalysisManager::GetInstance()->AddOnePrimaryTrack();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (aTrack->GetTrackID()==1 &&
+      (abs(aTrack->GetParticleDefinition()->GetPDGEncoding())==15 ||
+       abs(aTrack->GetParticleDefinition()->GetPDGEncoding())==13)) 
+  {
+    // in case of the lepton decays, the decay products are counted as primary particles
+    // * tau- decay (dominant)
+    // * mu- decay
+    G4TrackVector* secondaries = fpTrackingManager->GimmeSecondaries();
+    if (secondaries) 
+    {
+      size_t nSeco = secondaries->size();
+      if (nSeco>0) 
+      {
+        for (size_t i=0; i<nSeco; ++i) 
+        {
+          if ((*secondaries)[i]->GetCreatorProcess()->GetProcessName()=="Decay") 
+          {
+            TrackInformation* info =  new TrackInformation();
+            info->SetTrackIsFromPrimaryLepton(1);
+            (*secondaries)[i]->SetUserInformation(info);
+            AnalysisManager::GetInstance()->AddOnePrimaryTrack();
+          }
+        }
+      }
+    }
+  }
+
+  if (aTrack->GetParentID()==1 && aTrack->GetCreatorProcess()->GetProcessName()=="Decay") 
+  {
+    // in case of tau decay pizero
+    // decay products of this pizero are also counted as primary particles, mostly 2 gammas
+    if (aTrack->GetParticleDefinition()->GetPDGEncoding()==111) 
+    {
+      G4TrackVector* secondaries = fpTrackingManager->GimmeSecondaries();
+      if (secondaries) 
+      {
+        size_t nSeco = secondaries->size();
+        if (nSeco>0) 
+        {
+          for (size_t i=0; i<nSeco; ++i) 
+          {
+            if ((*secondaries)[i]->GetCreatorProcess()->GetProcessName()=="Decay") 
+            {
+              TrackInformation* info =  new TrackInformation();
+              info->SetTrackIsFromFSLPizero(1);
+              (*secondaries)[i]->SetUserInformation(info);
+              AnalysisManager::GetInstance()->AddOnePrimaryTrack();
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  //TrackInformation* aTrackInfo = (TrackInformation*)(aTrack->GetUserInformation());
+  //if (aTrackInfo) {
+  //  if (aTrackInfo->IsTrackFromPrimaryTau() | aTrackInfo->IsTrackFromPrimaryPizero()) {
+  //    std::cout<<aTrack->GetParentID()<<" "<<aTrack->GetParticleDefinition()->GetPDGEncoding()<<std::endl;
+  //    aTrackInfo->Print();
+  //  }
+  //}
 }

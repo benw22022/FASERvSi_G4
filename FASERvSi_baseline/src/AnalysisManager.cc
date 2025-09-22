@@ -14,6 +14,7 @@
 #include <G4Trajectory.hh>
 #include <G4LorentzVector.hh>
 #include "G4SDManager.hh"
+#include "G4THitsCollection.hh"
 
 #include <TDirectory.h>
 #include <TFile.h>
@@ -144,11 +145,11 @@ void AnalysisManager::bookTrkTree()
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
 
-void AnalysisManager::bookFASER2Trees()
+void AnalysisManager::bookHitsTrees()
 {
   // create subdirectory in file
-  fFASER2Dir = fFile->mkdir("faser2","FASER2 output",kTRUE);
-  fFile->cd(fFASER2Dir->GetName());
+  fHits = fFile->mkdir("Hits","Hits output",kTRUE);
+  fFile->cd(fHits->GetName());
 
   //* Acts Hits Tree [i == unsigned int; F == float; l == Long unsigned 64 int]
   fActsHitsTree = new TTree("hits", "ActsHitsTree");
@@ -225,7 +226,7 @@ void AnalysisManager::BeginOfRun()
   bookPrimTree();
   if (fSaveTrack) bookTrkTree();
 
-  bookFASER2Trees();
+  bookHitsTrees();
 }
 
 //---------------------------------------------------------------------
@@ -233,13 +234,14 @@ void AnalysisManager::BeginOfRun()
 
 void AnalysisManager::EndOfRun()
 {
+  G4cout << "Run has ended, closing output" << G4endl;
   // save common trees at the top of the output file
   fFile->cd();
   fEvt->Write();
   fPrim->Write();
   if (fSaveTrack) fTrk->Write();
 
-  fFile->cd(fFASER2Dir->GetName());
+  fFile->cd(fHits->GetName());
   fActsHitsTree->Write();
   fActsParticlesTree->Write();
   fFile->cd(); // go back to top
@@ -252,6 +254,7 @@ void AnalysisManager::EndOfRun()
 
 void AnalysisManager::BeginOfEvent()
 {
+  G4cout << "Starting new event, resetting variables" << G4endl;
   // reset vectors that need to be cleared for a new event
   // only reset arrays or vectors, tipically no need for other defaults
 
@@ -298,9 +301,10 @@ void AnalysisManager::BeginOfEvent()
 
 void AnalysisManager::EndOfEvent(const G4Event *event)
 {
-
+  G4cout << "Ending event, filling output trees" << G4endl;
   /// evtID
   evtID = event->GetEventID();
+  FillHitsOutput();
 
   // FILL EVENT TREE
   FillEventTree(event);
@@ -324,7 +328,7 @@ void AnalysisManager::EndOfEvent(const G4Event *event)
 
   //-----------------------------------------------------------
 
-  FillFASER2Output();
+  // FillHitsOutput();
 
 }
 
@@ -333,6 +337,7 @@ void AnalysisManager::EndOfEvent(const G4Event *event)
 
 void AnalysisManager::FillEventTree(const G4Event *event)
 {
+  G4cout << "Filling event tree" << G4endl;
   EventInformation* eventInfo = static_cast<EventInformation*>(event->GetUserInformation());
   eventInfo->Print();
   auto metadata = eventInfo->GetEventMetadata();
@@ -375,6 +380,7 @@ void AnalysisManager::FillEventTree(const G4Event *event)
 
 void AnalysisManager::FillPrimariesTree(const G4Event *event)
 {
+  G4cout << "Filling primaries tree" << G4endl;
   nPrimaryVertex = event->GetNumberOfPrimaryVertex();
   G4cout << "\nNumber of primary vertices  : " << nPrimaryVertex << G4endl;
   
@@ -447,6 +453,7 @@ void AnalysisManager::FillPrimariesTree(const G4Event *event)
 
 void AnalysisManager::FillTrajectoriesTree(const G4Event* event)
 {
+  G4cout << "Filling trajectories tree" << G4endl;
   int count_tracks = 0;
 
   G4cout << "==== Saving track information to tree ====" << G4endl; 
@@ -485,15 +492,24 @@ void AnalysisManager::FillTrajectoriesTree(const G4Event* event)
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
 
-void AnalysisManager::FillFASER2Output()
+void AnalysisManager::FillHitsOutput()
 {
-  G4cout << "==== Filling FASER2 output trees ====" << G4endl;
+  G4cout << "==== Filling Hits output trees ====" << G4endl;
 
-  // loop over the detected FASER2 sensitive volumes
+  // loop over the detected Hits sensitive volumes
   int nHits = 0;
   auto sdManager = G4SDManager::GetSDMpointer();
+  G4cout << "getting sdManager pointer" << G4endl;
   G4int sdId = sdManager->GetCollectionID("strip_detector");
-  auto hitCollection = dynamic_cast<SCTModuleHitCollection*>(fHCofEvent->GetHC(sdId));
+  G4cout << "Looking for hit collection with ID " << sdId << G4endl;
+  
+  G4cout  << "fHCofEvent->GetHC(" << sdId<<") = " << fHCofEvent->GetHC(sdId) << G4endl;
+  auto hitCollection = dynamic_cast<G4THitsCollection<SCTModuleHit>*>(fHCofEvent->GetHC(sdId));
+  G4cout << "Done dynamic cast of hist collection" << G4endl;
+
+  G4cout << "Found hit collection with ID " << sdId << G4endl;
+
+
   if (!hitCollection)
   {
     G4cout << "No hits recorded by " << "strip_detector" << G4endl;
@@ -503,6 +519,7 @@ void AnalysisManager::FillFASER2Output()
   std::map<G4int, G4int> sub_part_map{};
   for (auto hit : *hitCollection->GetVector())
   {
+    std::cout << "Processing hit from track ID " << hit->GetTrackID() << " with PDG " << hit->GetPDGID() << " and charge " << hit->GetCharge() << std::endl;
     if (hit->GetCharge() == 0)
       continue; // skip neutral particles, they don't hit
 
@@ -597,7 +614,7 @@ void AnalysisManager::FillFASER2Output()
   } // end of loop over hits
   fActsParticlesTree->Fill();
 
-  G4cout << "Total FASER2 recorded hits: " << nHits << G4endl;
+  G4cout << "Total Hits recorded hits: " << nHits << G4endl;
 }
 
 float_t AnalysisManager::GetTotalEnergy(float_t px, float_t py, float_t pz, float_t m)

@@ -183,7 +183,7 @@ private:
   G4int fStripSide = -1;       // Side number within a module (0 (front) or 1 (back))
   G4int fModuleNumber = -1;    // Module number within a layer (0 to 8)
   G4int fLayerNumber = -1;     // Number of the tracking layer (0 to NTrackingLayers)
-
+ 
   G4ThreeVector fTrackVertex{-999., -999., -999.};
   G4LorentzVector fTrackP4{0,0,0,0};
   G4int fIsPrimaryTrack = 0; // 1 if primary track, 0 otherwise

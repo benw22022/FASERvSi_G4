@@ -52,8 +52,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
     G4cout << " * No secondary tracks (excluding gamma) produced" << G4endl;
 
   // skip AnalysisManager if there are no tracks at all!
-  if(!fNPrimaryTrack.GetValue() && !fNSecondaryTrack.GetValue() && !fNSecondaryTrackNotGamma.GetValue()) 
-    return;
+  // if(!fNPrimaryTrack.GetValue() && !fNSecondaryTrack.GetValue() && !fNSecondaryTrackNotGamma.GetValue()) 
+  //   return;
 
   AnalysisManager* ana = AnalysisManager::GetInstance();
   ana->EndOfEvent(event);

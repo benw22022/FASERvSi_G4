@@ -12,10 +12,10 @@ SCTModuleDetector::~SCTModuleDetector(){}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void SCTModuleDetector::Initialize(G4HCofThisEvent *HCE) {
+  G4cout << "Initializing SCTModuleDetector" << G4endl;
   fHitCollection = new SCTModuleHitsCollection(GetName(), collectionName[0]);
 
-  if (fHCID < 0)
-    fHCID = GetCollectionID(0);
+  if (fHCID < 0) { fHCID = GetCollectionID(0); }
   HCE->AddHitsCollection(fHCID, fHitCollection);
   fTrackIDRecord.clear(); // Clear the track ID record for each event
 }
@@ -23,19 +23,19 @@ void SCTModuleDetector::Initialize(G4HCofThisEvent *HCE) {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 // void SCTModuleDetector::EndOfEvent(G4HCofThisEvent *) {
-//   for (auto it = fTmpHits.begin(); it != fTmpHits.end(); ++it) fHitCollection->insert(*it);
-
-//   fTmpHits.clear();
 // }
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist){
-
+  // G4cout << "Processing hit in SCTModuleDetector" << G4endl;
   G4Track* track = aStep->GetTrack();
   //track->SetTrackStatus(fStopAndKill);
   G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
   G4StepPoint *postStepPoint = aStep->GetPostStepPoint();
+
+  G4String volName = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetName();
+  // G4cout << "Hit volume: " << volName << G4endl;
 
   G4ThreeVector posHit = preStepPoint->GetPosition();
   G4int pdgid = track->GetParticleDefinition()->GetPDGEncoding();
@@ -55,11 +55,18 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   G4int module_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(2);
   G4int layer_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(3);
 
-  SCTModuleHit* tmpHit = new SCTModuleHit();
-
+  
   G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
   G4ThreeVector sensorCenterGlobal = touchable->GetTranslation();
   G4double sensorCentreZ = sensorCenterGlobal.z();
+
+  // for (int i = 0; i <= touchable->GetHistoryDepth(); ++i) {
+  //   G4String volName = touchable->GetVolume(i)->GetName();
+  //   G4int copyNum = touchable->GetCopyNumber(i);
+  //   G4cout << "Level " << i << ": " << volName << " (copy " << copyNum << ")" << G4endl;
+  // }
+
+  SCTModuleHit* tmpHit = new SCTModuleHit();
 
   // tmpHit->SetPosition(posHit[0]/mm, posHit[1]/mm, posHit[2]/mm); // in mm
   // fix the hit z-position to be the centre of the sensor - this way every hit on the same sensor has the same z-pos

@@ -49,12 +49,12 @@ class AnalysisManager {
     void bookEvtTree();
     void bookTrkTree();
     void bookPrimTree();
-    void bookFASER2Trees();
+    void bookHitsTrees();
 
     void FillEventTree(const G4Event* event);
     void FillPrimariesTree(const G4Event* event);
     void FillTrajectoriesTree(const G4Event* event);
-    void FillFASER2Output();
+    void FillHitsOutput();
     
     float_t GetTotalEnergy(float_t px, float_t py, float_t pz, float_t m);
 
@@ -79,7 +79,7 @@ class AnalysisManager {
     TTree*   fTrk;
     TTree*   fPrim;
 
-    TDirectory* fFASER2Dir;
+    TDirectory* fHits;
     TTree*   fActsHitsTree;
     TTree*   fActsParticlesTree;
 
@@ -149,7 +149,7 @@ class AnalysisManager {
     float_t primKE;
 
     //---------------------------------------------------
-    // OUTPUT VARIABLES FOR FASER2 TREES
+    // OUTPUT VARIABLES FOR Hits TREES
 
     // Acts Hit Information - the types are set to match the types expected by Acts::RootSimHitReader
     UInt_t ActsHitsEventID;

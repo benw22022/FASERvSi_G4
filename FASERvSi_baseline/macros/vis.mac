@@ -77,3 +77,32 @@
 #/vis/viewer/flush
 #
 # Now ready for /run/beamOn.
+
+/run/initialize
+/vis/drawVolume
+/vis/scene/add/trajectories smooth
+/vis/scene/endOfEventAction accumulate
+
+#/vis/viewer/flush
+/gen/select gun
+/gps/particle mu-
+/gps/pos/type Volume
+/gps/pos/shape Para
+/gps/ang/rot1 -1 0 0
+/gps/pos/centre 0 0 -50 cm
+/gps/pos/halfx 0.5 cm
+/gps/pos/halfy 0.5 cm
+/gps/pos/halfz 0.5 cm
+/gps/ang/type iso
+/gps/ang/maxtheta 3 deg
+/gps/ang/mintheta 0 deg
+/gps/ang/maxphi 360 deg
+/gps/ang/minphi 0 deg
+
+/gps/ene/type Gauss
+/gps/ene/mono 50 GeV
+/gps/ene/sigma 5 GeV
+
+
+/run/beamOn 10
+

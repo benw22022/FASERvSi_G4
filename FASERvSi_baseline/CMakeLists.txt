@@ -81,7 +81,7 @@ endforeach()
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(FASERvSi_baseline FASERvSi_baseline.cc ${sources} ${headers})
+add_executable(FASERvSi_baseline FASERvSi_baseline.cc ${sources})
 
 target_link_libraries(FASERvSi_baseline 
                       ${Geant4_LIBRARIES}

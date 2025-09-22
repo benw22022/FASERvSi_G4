@@ -33,7 +33,7 @@ GPSGenerator::GPSGenerator()
   G4double z0 = G4UniformRand();
   x0 = 0*mm;
   y0 = 0*mm;
-  z0 = -1*m;
+  z0 = 0*m;
   fGPS->GetCurrentSource()->GetPosDist()->SetPosDisType("Point");
   fGPS->GetCurrentSource()->GetPosDist()->SetCentreCoords(G4ThreeVector(x0, y0, z0));
 
@@ -62,10 +62,17 @@ void GPSGenerator::GeneratePrimaries(G4Event* anEvent)
   metadata.pdg = fGPS->GetParticleDefinition()->GetPDGEncoding();
   metadata.mass = fGPS->GetParticleDefinition()->GetPDGMass(); 
   metadata.charge = fGPS->GetParticleDefinition()->GetPDGCharge(); 
-  G4PrimaryVertex* vtx = anEvent->GetPrimaryVertex();
-  G4PrimaryParticle* pp = vtx->GetPrimary(0);
-  metadata.x4 = G4LorentzVector(vtx->GetX0(),vtx->GetY0(),vtx->GetZ0(),vtx->GetT0());
-  metadata.p4 = G4LorentzVector(pp->GetPx(),pp->GetPy(),pp->GetPz(),pp->GetTotalEnergy());
+  // G4cout << "Primary particle PDG code: " << metadata.pdg << G4endl;
+  // G4PrimaryVertex* vtx = anEvent->GetPrimaryVertex();
+  // if (!vtx) {
+  //   G4cerr << "ERROR: No primary vertex or particles found!" << G4endl;
+  //   return;
+  // }
+
+  // G4cout << "Primary vertex position (x,y,z,t) : (" << vtx->GetX0()/mm << ", " << vtx->GetY0()/mm << ", " << vtx->GetZ0()/mm << ", " << vtx->GetT0()/ns << ") mm, ns" << G4endl;
+  // G4PrimaryParticle* pp = vtx->GetPrimary(0);
+  // metadata.x4 = G4LorentzVector(vtx->GetX0(),vtx->GetY0(),vtx->GetZ0(),vtx->GetT0());
+  // metadata.p4 = G4LorentzVector(pp->GetPx(),pp->GetPy(),pp->GetPz(),pp->GetTotalEnergy());
   fVertexMetadata.push_back(metadata);
 
   fGPS->GeneratePrimaryVertex(anEvent);
