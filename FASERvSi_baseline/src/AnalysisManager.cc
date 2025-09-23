@@ -15,6 +15,9 @@
 #include <G4LorentzVector.hh>
 #include "G4SDManager.hh"
 #include "G4THitsCollection.hh"
+#include "G4VVisManager.hh"
+#include "G4Circle.hh"
+
 
 #include <TDirectory.h>
 #include <TFile.h>
@@ -27,6 +30,7 @@
 #include "EventInformation.hh"
 #include "AnalysisManager.hh"
 #include "reco/Barcode.hh"
+#include "reco/SpacePoint.hh"
 #include "FPFParticle.hh"
 #include "SCTModuleHit.hh"
 
@@ -500,35 +504,40 @@ void AnalysisManager::FillHitsOutput()
   // loop over the detected Hits sensitive volumes
   int nHits = 0;
   auto sdManager = G4SDManager::GetSDMpointer();
-  G4cout << "getting sdManager pointer" << G4endl;
   G4int sdId = sdManager->GetCollectionID("strip_detector");
-  G4cout << "Looking for hit collection with ID " << sdId << G4endl;
-  
-  G4cout  << "fHCofEvent->GetHC(" << sdId<<") = " << fHCofEvent->GetHC(sdId) << G4endl;
-
-  if (!fHCofEvent) {
-      G4cerr << "Null HCofThisEvent at event " << G4endl;
-      return;
-  }
   G4int nHC = fHCofEvent->GetNumberOfCollections();
-  G4cerr << "HCofThisEvent has " << nHC << " collections" << G4endl;
-
   auto hitCollection = dynamic_cast<SCTModuleHitCollection*>(fHCofEvent->GetHC(sdId));
-  G4cout << "Done dynamic cast of hist collection" << G4endl;
-
-  G4cout << "Found hit collection with ID " << sdId << G4endl;
-
 
   if (!hitCollection)
   {
     G4cout << "No hits recorded by " << "strip_detector" << G4endl;
     return;
   }
+
+  std::set<SCTModuleHit> space_points = makeSpacePoints(hitCollection);
+
+
+  G4VVisManager* visManager = G4VVisManager::GetConcreteInstance();
+  if (visManager) {
+      for (const auto& sp : space_points) {
+          std::cout << "Drawing space point at " << sp.GetX() << ", " << sp.GetY() << ", " << sp.GetZ() << std::endl;
+          G4ThreeVector hitPos = G4ThreeVector(sp.GetX(), sp.GetY(), sp.GetZ());
+          G4Circle circle(hitPos);
+          circle.SetScreenSize(500); // size in pixels
+          circle.SetFillStyle(G4Circle::filled);
+          G4Colour colour(1.0, 0.0, 0.0);
+          G4VisAttributes attribs(colour);
+          attribs.SetVisibility(true);
+          circle.SetVisAttributes(attribs);
+          visManager->Draw(circle);
+      }
+  }
+
   
   std::map<G4int, G4int> sub_part_map{};
   for (auto hit : *hitCollection->GetVector())
   {
-    std::cout << "Processing hit from track ID " << hit->GetTrackID() << " with PDG " << hit->GetPDGID() << " and charge " << hit->GetCharge() << std::endl;
+    // std::cout << "Processing hit from track ID " << hit->GetTrackID() << " with PDG " << hit->GetPDGID() << " and charge " << hit->GetCharge() << std::endl;
     if (hit->GetCharge() == 0)
       continue; // skip neutral particles, they don't hit
 

@@ -8,7 +8,6 @@
 
 #pragma once
 
-//#include "Acts/Utilities/MultiIndex.hpp"
 #include "reco/MultiIndex.hh"
 
 #include <cstdint>
@@ -58,11 +57,8 @@ class Channel : public Acts::MultiIndex<std::uint64_t, 12, 12, 16, 8, 16> {
     return *this;
   }
 
-  /// Reduce the Channel to the vertex identifier.
+  /// Reduce the Channel to the strip identifier.
   constexpr Channel strip() const {
-    // The vertex is identified by primary vertex, secondary vertex, and
-    // generation. The other components are set to 0 so two particle originating
-    // from the same vertex will have the same vertex ID.
     return Channel()
         .setStrip(stripNumber())
         .setSide(sideNumber())

@@ -66,8 +66,9 @@ SCTModuleGeometry::SCTModuleGeometry()
     fStrip_plane_log->SetVisAttributes(strip_planeVisAtt);
 
     // Make individual strips invisible in visualization (too many to display usefully)
-    G4VisAttributes* strip_invis = new G4VisAttributes();
-    strip_invis->SetVisibility(false);
+    G4VisAttributes* strip_invis = new G4VisAttributes(G4Colour::Green());
+    // strip_invis->SetVisibility(false);
+    strip_invis->SetVisibility(true);
     fStrip_indiv_log->SetVisAttributes(strip_invis);
 }
 

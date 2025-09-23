@@ -82,6 +82,7 @@
 /vis/drawVolume
 /vis/scene/add/trajectories smooth
 /vis/scene/endOfEventAction accumulate
+/vis/scene/add/hits
 
 #/vis/viewer/flush
 /gen/select gun

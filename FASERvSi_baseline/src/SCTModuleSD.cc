@@ -40,7 +40,7 @@ void SCTModuleDetector::EndOfEvent(G4HCofThisEvent *HCE) {
 
   HCE->AddHitsCollection(fHCID, fHitCollection);
   fTrackIDRecord.clear(); // Clear the track ID record for each event
-  std::cout << "Number of hits in this event: " << fNHits << std::endl;
+  std::cout << "SCTModuleSD::EndOfEvent Number of hits in this event: " << fNHits << std::endl;
   fNHits = 0;
 }
 
@@ -70,6 +70,8 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   G4double time = track->GetDynamicParticle()->Get4Momentum().t();
   G4ThreeVector delta_momentum = aStep->GetDeltaMomentum();
   G4double delta_energy = aStep->GetDeltaEnergy();
+  G4VPhysicalVolume* physVol = preStepPoint->GetPhysicalVolume();
+
 
   G4int strip_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(0);
   G4int strip_side = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(1);
@@ -86,18 +88,25 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   G4ThreeVector sensorCenterGlobal = touchable->GetTranslation();
   G4double sensorCentreZ = sensorCenterGlobal.z();
 
-  G4cout << G4endl;
-  for (int i = 0; i <= touchable->GetHistoryDepth(); ++i) {
-    G4String volName = touchable->GetVolume(i)->GetName();
-    G4int copyNum = touchable->GetCopyNumber(i);
-    G4cout << "Level " << i << ": " << volName << " (copy " << copyNum << ")" << G4endl;
-  }
+  // G4cout << G4endl;
+  // for (int i = 0; i <= touchable->GetHistoryDepth(); ++i) {
+  //   G4String volName = touchable->GetVolume(i)->GetName();
+  //   G4int copyNum = touchable->GetCopyNumber(i);
+  //   G4cout << "Level " << i << ": " << volName << " (copy " << copyNum << ")" << G4endl;
+  // }
 
   SCTModuleHit* tmpHit = new SCTModuleHit();
 
   // tmpHit->SetPosition(posHit[0]/mm, posHit[1]/mm, posHit[2]/mm); // in mm
   // fix the hit z-position to be the centre of the sensor - this way every hit on the same sensor has the same z-pos
+  G4ThreeVector strip_global_pos = aStep->GetPreStepPoint()->GetTouchable()->GetTranslation();
+  const G4RotationMatrix* strip_global_rotation = aStep->GetPreStepPoint()->GetTouchable()->GetRotation();
 
+  std::cout << "Rotation matrix of the strip: " << std::endl;
+  std::cout << *strip_global_rotation << std::endl;
+
+  tmpHit->SetStripCentre(strip_global_pos);
+  tmpHit->SetStripRotation(*strip_global_rotation);
   tmpHit->SetPosition(posHit[0]/mm, posHit[1]/mm, sensorCentreZ/mm); // in mm
   tmpHit->SetPDGID(pdgid);
   tmpHit->SetEnergy(energy/GeV);
@@ -119,6 +128,7 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   tmpHit->SetT(time/ns);
   tmpHit->SetTrackVertex(track->GetVertexPosition()/mm);
   tmpHit->SetTrackP4(track->GetDynamicParticle()->Get4Momentum()/GeV);
+  tmpHit->SetPhysVol(physVol);
   if (track->GetParentID() == 0) {
     tmpHit->SetIsPrimaryTrack(1);
     tmpHit->SetIsSecondaryTrack(0);
@@ -128,21 +138,21 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
     tmpHit->SetIsSecondaryTrack(1);
   }
 
-  // Check if this sensor has already been hit by this track
-  G4int sensor_id = channel.value(); // Unique identifier for the sensor based on strip, side, module, layer
-  if (fTrackIDRecord.find(sensor_id) != fTrackIDRecord.end()) 
-  {
-    std::vector<G4int> tracks_that_hit_sensor = fTrackIDRecord[sensor_id];
-    if (std::find(tracks_that_hit_sensor.begin(), tracks_that_hit_sensor.end(), track->GetTrackID()) != tracks_that_hit_sensor.end()) 
-    {
-      return 0; // This track has already hit this sensor, so we skip this hit
-    }
-    fTrackIDRecord[sensor_id].push_back(track->GetTrackID());
-  }
-  else
-  {
-    fTrackIDRecord[sensor_id] = {track->GetTrackID()};
-  }
+  // // Check if this sensor has already been hit by this track
+  // G4int sensor_id = channel.value(); // Unique identifier for the sensor based on strip, side, module, layer
+  // if (fTrackIDRecord.find(sensor_id) != fTrackIDRecord.end()) 
+  // {
+  //   std::vector<G4int> tracks_that_hit_sensor = fTrackIDRecord[sensor_id];
+  //   if (std::find(tracks_that_hit_sensor.begin(), tracks_that_hit_sensor.end(), track->GetTrackID()) != tracks_that_hit_sensor.end()) 
+  //   {
+  //     return 0; // This track has already hit this sensor, so we skip this hit
+  //   }
+  //   fTrackIDRecord[sensor_id].push_back(track->GetTrackID());
+  // }
+  // else
+  // {
+  //   fTrackIDRecord[sensor_id] = {track->GetTrackID()};
+  // }
 
   fHitCollection->insert(tmpHit);
   fNHits++;

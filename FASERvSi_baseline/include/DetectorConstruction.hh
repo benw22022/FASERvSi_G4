@@ -49,6 +49,9 @@ public:
 
   virtual G4VPhysicalVolume* Construct();
 
+  G4int GetNlayers() const { return fNLayers; }
+  G4int GetModulesPerLayer() const { return fModulesPerLayer; }
+
 private:
   void DefineMaterials();
 
@@ -64,7 +67,10 @@ private:
 
   std::vector<G4VPhysicalVolume*> fSD_phys;
   std::vector<G4VPhysicalVolume*> fTarget_phys;
-  
+
+  G4int fModulesPerLayer{8};
+  G4int fNLayers{0};
+
   bool detectorCreated{false};
 
   void ConstructSDandField() override;

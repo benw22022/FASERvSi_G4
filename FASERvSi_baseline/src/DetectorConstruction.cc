@@ -264,6 +264,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double target_mass = 0*g;
   for (unsigned int i{0}; i < DetectorParameters::Get()->fnumSCTLayers; i++)
   {
+    fNLayers++;
     G4VPhysicalVolume* Target_phys = new G4PVPlacement(0, G4ThreeVector(0, 0, pos), Target_log, "Target_phys", experimentalHall_log, false, i);
     auto solid = Target_log->GetSolid();
     auto material = Target_log->GetMaterial();

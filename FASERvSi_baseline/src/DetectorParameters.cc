@@ -10,7 +10,7 @@ DetectorParameters::DetectorParameters()
     fexpHall_z = 3*m;
     
     // fnumSCTLayers = 50;
-    fnumSCTLayers = 100;
+    fnumSCTLayers = 2;
     ftargetStartPosZ = 0*mm;
     fdetWidth = 300*mm;
     // fdetHeight = 300*2*mm;

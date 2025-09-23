@@ -2,7 +2,9 @@
 
 #include <G4Event.hh>
 #include <G4AccumulableManager.hh>
-
+#include "G4VVisManager.hh"
+#include "G4Circle.hh"
+#include "G4VisAttributes.hh"
 #include "AnalysisManager.hh"
 
 using namespace std;
@@ -54,6 +56,17 @@ void EventAction::EndOfEventAction(const G4Event* event)
   // skip AnalysisManager if there are no tracks at all!
   // if(!fNPrimaryTrack.GetValue() && !fNSecondaryTrack.GetValue() && !fNSecondaryTrackNotGamma.GetValue()) 
   //   return;
+
+  G4VVisManager* visManager = G4VVisManager::GetConcreteInstance();
+  if (visManager) {
+      G4ThreeVector pos(0, 0, 0);
+      G4Circle circle(pos);
+      circle.SetScreenSize(100);
+      circle.SetFillStyle(G4Circle::filled);
+      circle.SetVisAttributes(G4VisAttributes(G4Colour(1, 0, 0)));
+      visManager->Draw(circle);
+  }
+
 
   AnalysisManager* ana = AnalysisManager::GetInstance();
   ana->EndOfEvent(event);

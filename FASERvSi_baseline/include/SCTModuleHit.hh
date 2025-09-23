@@ -4,9 +4,13 @@
 #include "G4THitsCollection.hh"
 #include "G4VHit.hh"
 #include "G4Types.hh"
-#include <vector>
 #include "G4ThreeVector.hh"
 #include  "G4LorentzVector.hh"
+#include "G4VPhysicalVolume.hh"
+
+#include <vector>
+#include <iostream>
+
 
 class SCTModuleHit : public G4VHit {
 public:
@@ -15,9 +19,10 @@ public:
 
   inline void* operator new(size_t);
   inline void operator delete(void*);
-
-  ///// Get hit ID calculated as 1000 * sensorID + cellID
-  //G4int ID() { return 1000 * fCopyNumSensor + fCopyNumCell; }
+  friend std::ostream& operator<<(std::ostream& os, const SCTModuleHit& hit);
+  bool operator<(const SCTModuleHit& other) const;
+  
+  
   inline void SetPosition(G4double x, G4double y, G4double z) {
     fPosX = x;
     fPosY = y;
@@ -147,6 +152,17 @@ public:
   inline void SetIsPrimaryTrack(G4int isPrimary) { fIsPrimaryTrack = isPrimary; }
   inline void SetIsSecondaryTrack(G4int isSecondary) { fIsSecondaryTrack = isSecondary; }
 
+  inline void SetTruthMatched(bool matched) { isTruthMatched = matched; }
+  inline bool GetTruthMatched() const { return isTruthMatched; }
+
+  inline void SetPhysVol(G4VPhysicalVolume* physVol) { fPhysVol = physVol; }
+  inline G4VPhysicalVolume* GetPhysVol() const { return fPhysVol; }
+
+  inline void SetStripCentre(const G4ThreeVector& centre) { fStripCentre = centre; }
+  inline G4ThreeVector GetStripCentre() const { return fStripCentre; }
+
+  inline void SetStripRotation(const G4RotationMatrix& rotation) { fStripRotation = rotation; }
+  inline G4RotationMatrix GetStripRotation() const { return fStripRotation; }
 
 private:
   /// Position along x axis
@@ -186,11 +202,17 @@ private:
   G4int fStripSide = -1;       // Side number within a module (0 (front) or 1 (back))
   G4int fModuleNumber = -1;    // Module number within a layer (0 to 8)
   G4int fLayerNumber = -1;     // Number of the tracking layer (0 to NTrackingLayers)
+
+  G4bool isTruthMatched = false;
  
   G4ThreeVector fTrackVertex{-999., -999., -999.};
   G4LorentzVector fTrackP4{0,0,0,0};
   G4int fIsPrimaryTrack = 0; // 1 if primary track, 0 otherwise
   G4int fIsSecondaryTrack = 0; // 1 if secondary track, 0 otherwise
+
+  G4ThreeVector fStripCentre{-999., -999., -999.};
+  G4RotationMatrix fStripRotation;
+  G4VPhysicalVolume* fPhysVol;
 
 };
 
@@ -210,6 +232,5 @@ inline void SCTModuleHit::operator delete(void* aHit) {
   }
   hitAllocator->FreeSingle((SCTModuleHit*) aHit);
 }
-
 
 #endif /* EXN04DETECTORHIT_HH */
