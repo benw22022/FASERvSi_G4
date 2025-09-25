@@ -58,7 +58,7 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
 
   if (charge == 0) return false; // skip neutral particles, they don't hit
 
-  G4String volName = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetName();
+  G4String volName = preStepPoint->GetTouchableHandle()->GetVolume()->GetName();
   // G4cout << "Hit volume: " << volName << G4endl;
 
   G4ThreeVector posHit = preStepPoint->GetPosition();
@@ -75,10 +75,10 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   G4VPhysicalVolume* physVol = preStepPoint->GetPhysicalVolume();
 
 
-  G4int strip_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(0);
-  G4int strip_side = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(1);
-  G4int module_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(2);
-  G4int layer_number = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(3);
+  G4int strip_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(0);
+  G4int strip_side = preStepPoint->GetTouchableHandle()->GetCopyNumber(1);
+  G4int module_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(2);
+  G4int layer_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(3);
 
   Channel channel;
   channel.setStrip(strip_number);
@@ -87,7 +87,7 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   channel.setLayer(layer_number);
 
   // G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
-  G4TouchableHistory* touchable = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());
+  G4TouchableHistory* touchable = (G4TouchableHistory*)(preStepPoint->GetTouchable());
   G4ThreeVector sensorCenterGlobal = touchable->GetTranslation();
   G4double sensorCentreZ = sensorCenterGlobal.z();
 
@@ -102,20 +102,19 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
 
   // tmpHit->SetPosition(posHit[0]/mm, posHit[1]/mm, posHit[2]/mm); // in mm
   // fix the hit z-position to be the centre of the sensor - this way every hit on the same sensor has the same z-pos
-  G4ThreeVector strip_global_pos = aStep->GetPreStepPoint()->GetTouchable()->GetTranslation();
-  const G4RotationMatrix* strip_global_rotation = aStep->GetPreStepPoint()->GetTouchable()->GetRotation();
+  G4ThreeVector strip_global_pos = preStepPoint->GetTouchable()->GetTranslation();
+  const G4RotationMatrix* strip_global_rotation = preStepPoint->GetTouchable()->GetRotation();
 
 
-  for (G4int i = 0; i < touchable->GetHistory()->GetDepth(); ++i) {
-    G4VPhysicalVolume* pv = touchable->GetVolume(i);
-    G4ThreeVector pos = pv->GetTranslation();
-    G4RotationMatrix* rot = pv->GetRotation();
-    G4cout << "Level " << i << ": " << pv->GetName() << " at " << pos << G4endl;
-}
+//   for (G4int i = 0; i < touchable->GetHistory()->GetDepth(); ++i) {
+//     G4VPhysicalVolume* pv = touchable->GetVolume(i);
+//     G4ThreeVector pos = pv->GetTranslation();
+//     G4RotationMatrix* rot = pv->GetRotation();
+//     G4cout << "Level " << i << ": " << pv->GetName() << " at " << pos << G4endl;
+// }
 
   //* Get the geometry of the strip that was hit
-  G4StepPoint* preStep = aStep->GetPreStepPoint();
-  G4TouchableHistory* touchable1 = (G4TouchableHistory*)(preStep->GetTouchable());
+  G4TouchableHistory* touchable1 = (G4TouchableHistory*)(preStepPoint->GetTouchable());
   G4VPhysicalVolume* stripPhys = touchable1->GetVolume();
 
   G4ThreeVector stripTranslation = stripPhys->GetTranslation();
@@ -124,8 +123,9 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   //* Transform the local coordinates of the strip ends to the global coordinate system
   G4ThreeVector localStart(0, -SCTModuleGeometry::stripLength()/2, 0);
   G4ThreeVector localEnd(0, SCTModuleGeometry::stripLength()/2, 0);
-  G4ThreeVector globalStart = touchable->GetHistory()->GetTopTransform().Inverse().TransformPoint(localStart);
-  G4ThreeVector globalEnd   = touchable->GetHistory()->GetTopTransform().Inverse().TransformPoint(localEnd);
+  auto local_to_global_trans = touchable->GetHistory()->GetTopTransform().Inverse();
+  G4ThreeVector globalStart = local_to_global_trans.TransformPoint(localStart);
+  G4ThreeVector globalEnd   = local_to_global_trans.TransformPoint(localEnd);
   
   tmpHit->SetStripEnds(std::make_pair(globalStart, globalEnd));
   tmpHit->SetStripCentre(strip_global_pos);

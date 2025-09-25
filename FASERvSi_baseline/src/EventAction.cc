@@ -57,14 +57,12 @@ void EventAction::EndOfEventAction(const G4Event* event)
   // skip AnalysisManager if there are no tracks at all!
   // if(!fNPrimaryTrack.GetValue() && !fNSecondaryTrack.GetValue() && !fNSecondaryTrackNotGamma.GetValue()) 
   //   return;
-  std::set<SCTModuleHit> spacePoints = makeSpacePoints(dynamic_cast<SCTModuleHitCollection*>(event->GetHCofThisEvent()->GetHC(G4SDManager::GetSDMpointer()->GetCollectionID("strip_detector"))));
-  auto* recoHits = new SCTModuleHitCollection("RecoSpacePointsSD", "RecoSpacePoints");
-  for (const auto& sp : spacePoints) {
-      SCTModuleHit* hit = new SCTModuleHit(sp);
-      recoHits->insert(hit);
-  }
+  auto* inputHitsCollection = dynamic_cast<SCTModuleHitCollection*>(event->GetHCofThisEvent()->GetHC(G4SDManager::GetSDMpointer()->GetCollectionID("strip_detector")));
+  auto* outputHitsCollection = new SCTModuleHitCollection("RecoSpacePointsSD", "RecoSpacePoints");
+  
+  makeSpacePoints(inputHitsCollection, outputHitsCollection);
   G4int recoHCID = event->GetHCofThisEvent()->GetNumberOfCollections();
-  event->GetHCofThisEvent()->AddHitsCollection(recoHCID, recoHits);
+  event->GetHCofThisEvent()->AddHitsCollection(recoHCID, outputHitsCollection);
 
   AnalysisManager* ana = AnalysisManager::GetInstance();
   ana->EndOfEvent(event);

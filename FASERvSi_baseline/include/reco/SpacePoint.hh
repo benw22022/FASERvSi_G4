@@ -42,10 +42,10 @@ static G4double cross2D(const G4TwoVector& v1, const G4TwoVector& v2) {
 }
 
 
-std::set<SCTModuleHit> makeSpacePoints(SCTModuleHitCollection* hitCollection) {
+void makeSpacePoints(SCTModuleHitCollection* inputHitCollection, SCTModuleHitCollection* outputHitCollection) {
 
     //* Use a set to store the space points
-    std::set<SCTModuleHit> spacePoints;
+    // std::set<SCTModuleHit> spacePoints;
 
     //* Get the detector construction to access geometry information
     auto *runManager = G4RunManager::GetRunManager();
@@ -58,33 +58,36 @@ std::set<SCTModuleHit> makeSpacePoints(SCTModuleHitCollection* hitCollection) {
     std::pair<std::set<SCTModuleHit*>, std::set<SCTModuleHit*>>>> hitsInModule; // First: side1, Second: side2
 
     //* Group hits by layer, module and side
-    for (auto hit : *hitCollection->GetVector())
+    for (auto hit : *inputHitCollection->GetVector())
     {
         G4int layer_id = hit->GetLayerNumber();
         G4int module_id = hit->GetModuleNumber();
         G4int side = hit->GetStripSide();
         if (side == 0) {
             hitsInModule[layer_id][module_id].first.insert(hit);
-            G4cout << "Hit on layer " << layer_id << ", module " << module_id << ", side " << side << ": " << *hit << G4endl; 
+            // G4cout << "Hit on layer " << layer_id << ", module " << module_id << ", side " << side << ": " << *hit << G4endl; 
         } else if (side == 1) {
             hitsInModule[layer_id][module_id].second.insert(hit);
-            G4cout << "Hit on layer " << layer_id << ", module " << module_id << ", side " << side << ": " << *hit << G4endl;   
+            // G4cout << "Hit on layer " << layer_id << ", module " << module_id << ", side " << side << ": " << *hit << G4endl;   
         }
     }
 
     //* Create space points by computing the 2d intercept of each strip by treating as line segements
     //* Loop through every possible pair of strips to find all space points on module
+    G4int nReconstructedSpacePoints{0};
     for (G4int layer_id = 0; layer_id < detector->GetNlayers(); ++layer_id) {
         for (G4int module_id = 0; module_id < detector->GetModulesPerLayer(); ++module_id) {
             auto& side1Hits = hitsInModule[layer_id][module_id].first;
             auto& side2Hits = hitsInModule[layer_id][module_id].second;
 
-            std::vector<LineEquation> stripLineEqs1;
-            std::vector<LineEquation> stripLineEqs2;
+            // Store as sets as you can get multiple hits on the same strip
+            std::set<LineEquation> stripLineEqs1;
+            std::set<LineEquation> stripLineEqs2;
 
            //* Get the ends of each strip that was hit
             for (auto* hit1 : side1Hits) {
-                stripLineEqs1.push_back(hit1->GetStripEnds());
+                // stripLineEqs1.push_back(hit1->GetStripEnds());
+                stripLineEqs1.insert(hit1->GetStripEnds());
 
                 // G4cout << "Top: " << hit1->GetStripEnds().first << ", "  << hit1->GetStripEnds().second << std::endl;
                 // SCTModuleHit* spacePointHit1 = new SCTModuleHit();
@@ -105,9 +108,8 @@ std::set<SCTModuleHit> makeSpacePoints(SCTModuleHitCollection* hitCollection) {
                 
             }
             for (auto* hit2 : side2Hits) {
-    
-
-                stripLineEqs2.push_back(hit2->GetStripEnds());
+                // stripLineEqs2.push_back(hit2->GetStripEnds());
+                stripLineEqs2.insert(hit2->GetStripEnds());
     
                 // G4cout << "Bottom: " << hit2->GetStripEnds().first << ", "  << hit2->GetStripEnds().second << std::endl;
                 // SCTModuleHit* spacePointHit1 = new SCTModuleHit();
@@ -143,10 +145,10 @@ std::set<SCTModuleHit> makeSpacePoints(SCTModuleHitCollection* hitCollection) {
 
                     G4TwoVector p = G4TwoVector(bottom_strip.first.x(), bottom_strip.first.y());       // bottom strip end 1
                     G4TwoVector r = G4TwoVector(bottom_strip.second.x(), bottom_strip.second.y()) - p;
-                    // G4cout << "p = " << p << " r = " << r << std::endl;
                     
-                    G4double t = cross2D(q - p, s) / cross2D(r, s);
-                    G4double u = cross2D(q - p, r) / cross2D(r, s);
+                    G4double denom = cross2D(r, s);
+                    G4double t = cross2D(q - p, s) / denom;
+                    G4double u = cross2D(q - p, r) / denom;
 
                     // G4cout << "t = "  << t << ", u = " << u << std::endl;
 
@@ -172,20 +174,20 @@ std::set<SCTModuleHit> makeSpacePoints(SCTModuleHitCollection* hitCollection) {
                     G4double zpos = (top_strip.first[2] +  bottom_strip.first[2]) / 2;
 
                     G4ThreeVector spacePointPos = G4ThreeVector(xpos, ypos, zpos);
-                    SCTModuleHit spacePointHit;
-                    spacePointHit.SetPosition(xpos, ypos, zpos);
-                    spacePointHit.SetLayerNumber(layer_id);
-                    spacePointHit.SetModuleNumber(module_id);
-                    spacePointHit.SetColour(G4Colour::Blue());
+                    SCTModuleHit* spacePointHit = new SCTModuleHit();
+                    spacePointHit->SetPosition(xpos, ypos, zpos);
+                    spacePointHit->SetLayerNumber(layer_id);
+                    spacePointHit->SetModuleNumber(module_id);
+                    spacePointHit->SetColour(G4Colour::Blue());
+                    spacePointHit->SetIsReco(true);
+                    // G4cout << "Created space point at " << spacePointPos << " for layer " << layer_id << ", module " << module_id << std::endl;
 
-                    G4cout << "Created space point at " << spacePointPos << " for layer " << layer_id << ", module " << module_id << std::endl;
-
-                    spacePoints.insert(spacePointHit);
+                    outputHitCollection->insert(spacePointHit);
+                    nReconstructedSpacePoints++;
                 }
             }
         }
     }
 
-
-    return spacePoints;
+    G4cout << "Spacepoint maker: Made " << nReconstructedSpacePoints << " space points" << G4endl;
 }
