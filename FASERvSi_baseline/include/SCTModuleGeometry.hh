@@ -37,7 +37,7 @@ class SCTModuleGeometry {
         static constexpr G4double planeSeparation() { return fPlaneSeparation; } // Separation between the two strip planes in a module
 
     private:
-        static constexpr G4int fNstrips = 10;//768;
+        static constexpr G4int fNstrips = 768;
         static constexpr G4double fStereoAngle = 40 * mrad;
         static constexpr G4double fStripLength = 128.05*mm;
         static constexpr G4double fPlaneWidth = 63.56*mm;

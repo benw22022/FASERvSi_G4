@@ -6,6 +6,7 @@
 #include "G4Circle.hh"
 #include "G4VisAttributes.hh"
 #include "AnalysisManager.hh"
+#include "reco/SpacePoint.hh"
 
 using namespace std;
 
@@ -56,17 +57,14 @@ void EventAction::EndOfEventAction(const G4Event* event)
   // skip AnalysisManager if there are no tracks at all!
   // if(!fNPrimaryTrack.GetValue() && !fNSecondaryTrack.GetValue() && !fNSecondaryTrackNotGamma.GetValue()) 
   //   return;
-
-  G4VVisManager* visManager = G4VVisManager::GetConcreteInstance();
-  if (visManager) {
-      G4ThreeVector pos(0, 0, 0);
-      G4Circle circle(pos);
-      circle.SetScreenSize(100);
-      circle.SetFillStyle(G4Circle::filled);
-      circle.SetVisAttributes(G4VisAttributes(G4Colour(1, 0, 0)));
-      visManager->Draw(circle);
+  std::set<SCTModuleHit> spacePoints = makeSpacePoints(dynamic_cast<SCTModuleHitCollection*>(event->GetHCofThisEvent()->GetHC(G4SDManager::GetSDMpointer()->GetCollectionID("strip_detector"))));
+  auto* recoHits = new SCTModuleHitCollection("RecoSpacePointsSD", "RecoSpacePoints");
+  for (const auto& sp : spacePoints) {
+      SCTModuleHit* hit = new SCTModuleHit(sp);
+      recoHits->insert(hit);
   }
-
+  G4int recoHCID = event->GetHCofThisEvent()->GetNumberOfCollections();
+  event->GetHCofThisEvent()->AddHitsCollection(recoHCID, recoHits);
 
   AnalysisManager* ana = AnalysisManager::GetInstance();
   ana->EndOfEvent(event);

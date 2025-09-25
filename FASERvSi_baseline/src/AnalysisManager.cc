@@ -30,7 +30,7 @@
 #include "EventInformation.hh"
 #include "AnalysisManager.hh"
 #include "reco/Barcode.hh"
-#include "reco/SpacePoint.hh"
+// #include "reco/SpacePoint.hh"
 #include "FPFParticle.hh"
 #include "SCTModuleHit.hh"
 
@@ -503,10 +503,18 @@ void AnalysisManager::FillHitsOutput()
 
   // loop over the detected Hits sensitive volumes
   int nHits = 0;
-  auto sdManager = G4SDManager::GetSDMpointer();
-  G4int sdId = sdManager->GetCollectionID("strip_detector");
+  // auto sdManager = G4SDManager::GetSDMpointer();
+  // G4int sdId = sdManager->GetCollectionID("RecoSpacePointsSD/RecoSpacePoints");
+  // G4int nHC = fHCofEvent->GetNumberOfCollections();
+  // auto hitCollection = dynamic_cast<SCTModuleHitCollection*>(fHCofEvent->GetHC(sdId));
+  
   G4int nHC = fHCofEvent->GetNumberOfCollections();
-  auto hitCollection = dynamic_cast<SCTModuleHitCollection*>(fHCofEvent->GetHC(sdId));
+  for (G4int i = 0; i < nHC; ++i) {
+      auto* hc = fHCofEvent->GetHC(i);
+      auto* hitCollection = dynamic_cast<SCTModuleHitCollection*>(hc);
+      if (hitCollection && hitCollection->GetName() == "RecoSpacePoints") {
+          // Found it — process hitCollection
+  
 
   if (!hitCollection)
   {
@@ -514,24 +522,24 @@ void AnalysisManager::FillHitsOutput()
     return;
   }
 
-  std::set<SCTModuleHit> space_points = makeSpacePoints(hitCollection);
+  // std::set<SCTModuleHit> space_points = makeSpacePoints(hitCollection);
 
 
-  G4VVisManager* visManager = G4VVisManager::GetConcreteInstance();
-  if (visManager) {
-      for (const auto& sp : space_points) {
-          std::cout << "Drawing space point at " << sp.GetX() << ", " << sp.GetY() << ", " << sp.GetZ() << std::endl;
-          G4ThreeVector hitPos = G4ThreeVector(sp.GetX(), sp.GetY(), sp.GetZ());
-          G4Circle circle(hitPos);
-          circle.SetScreenSize(500); // size in pixels
-          circle.SetFillStyle(G4Circle::filled);
-          G4Colour colour(1.0, 0.0, 0.0);
-          G4VisAttributes attribs(colour);
-          attribs.SetVisibility(true);
-          circle.SetVisAttributes(attribs);
-          visManager->Draw(circle);
-      }
-  }
+  // G4VVisManager* visManager = G4VVisManager::GetConcreteInstance();
+  // if (visManager) {
+  //     for (const auto& sp : space_points) {
+  //         std::cout << "Drawing space point at " << sp.GetX() << ", " << sp.GetY() << ", " << sp.GetZ() << std::endl;
+  //         G4ThreeVector hitPos = G4ThreeVector(sp.GetX(), sp.GetY(), sp.GetZ());
+  //         G4Circle circle(hitPos);
+  //         circle.SetScreenSize(10); // size in pixels
+  //         circle.SetFillStyle(G4Circle::filled);
+  //         G4Colour colour(1.0, 0.0, 0.0);
+  //         G4VisAttributes attribs(colour);
+  //         attribs.SetVisibility(true);
+  //         circle.SetVisAttributes(attribs);
+  //         visManager->Draw(circle);
+  //     }
+  // }
 
   
   std::map<G4int, G4int> sub_part_map{};
@@ -633,6 +641,8 @@ void AnalysisManager::FillHitsOutput()
   fActsParticlesTree->Fill();
 
   G4cout << "Total Hits recorded hits: " << nHits << G4endl;
+}
+}
 }
 
 float_t AnalysisManager::GetTotalEnergy(float_t px, float_t py, float_t pz, float_t m)

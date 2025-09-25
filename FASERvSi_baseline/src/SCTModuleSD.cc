@@ -2,6 +2,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4SDManager.hh"
 #include "G4RunManager.hh"
+#include "G4Box.hh"
+#include "SCTModuleGeometry.hh"
 #include "SCTModuleHit.hh"
 #include "reco/Channel.hh"
 
@@ -84,7 +86,8 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   channel.setModule(module_number);
   channel.setLayer(layer_number);
 
-  G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
+  // G4TouchableHandle touchable = preStepPoint->GetTouchableHandle();
+  G4TouchableHistory* touchable = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());
   G4ThreeVector sensorCenterGlobal = touchable->GetTranslation();
   G4double sensorCentreZ = sensorCenterGlobal.z();
 
@@ -102,11 +105,32 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   G4ThreeVector strip_global_pos = aStep->GetPreStepPoint()->GetTouchable()->GetTranslation();
   const G4RotationMatrix* strip_global_rotation = aStep->GetPreStepPoint()->GetTouchable()->GetRotation();
 
-  std::cout << "Rotation matrix of the strip: " << std::endl;
-  std::cout << *strip_global_rotation << std::endl;
 
+  for (G4int i = 0; i < touchable->GetHistory()->GetDepth(); ++i) {
+    G4VPhysicalVolume* pv = touchable->GetVolume(i);
+    G4ThreeVector pos = pv->GetTranslation();
+    G4RotationMatrix* rot = pv->GetRotation();
+    G4cout << "Level " << i << ": " << pv->GetName() << " at " << pos << G4endl;
+}
+
+  //* Get the geometry of the strip that was hit
+  G4StepPoint* preStep = aStep->GetPreStepPoint();
+  G4TouchableHistory* touchable1 = (G4TouchableHistory*)(preStep->GetTouchable());
+  G4VPhysicalVolume* stripPhys = touchable1->GetVolume();
+
+  G4ThreeVector stripTranslation = stripPhys->GetTranslation();
+  const G4RotationMatrix* stripRotation = stripPhys->GetRotation();
+
+  //* Transform the local coordinates of the strip ends to the global coordinate system
+  G4ThreeVector localStart(0, -SCTModuleGeometry::stripLength()/2, 0);
+  G4ThreeVector localEnd(0, SCTModuleGeometry::stripLength()/2, 0);
+  G4ThreeVector globalStart = touchable->GetHistory()->GetTopTransform().Inverse().TransformPoint(localStart);
+  G4ThreeVector globalEnd   = touchable->GetHistory()->GetTopTransform().Inverse().TransformPoint(localEnd);
+  
+  tmpHit->SetStripEnds(std::make_pair(globalStart, globalEnd));
   tmpHit->SetStripCentre(strip_global_pos);
   tmpHit->SetStripRotation(*strip_global_rotation);
+  
   tmpHit->SetPosition(posHit[0]/mm, posHit[1]/mm, sensorCentreZ/mm); // in mm
   tmpHit->SetPDGID(pdgid);
   tmpHit->SetEnergy(energy/GeV);

@@ -1,4 +1,8 @@
 #include "SCTModuleHit.hh"
+#include "G4Circle.hh"
+#include "G4Colour.hh"
+#include "G4VisAttributes.hh"
+#include "G4VVisManager.hh"
 
 G4ThreadLocal G4Allocator<SCTModuleHit>* hitAllocator = nullptr;
 
@@ -25,4 +29,27 @@ bool SCTModuleHit::operator<(const SCTModuleHit& other) const {
     if (fStripSide != other.fStripSide)
         return fStripSide < other.fStripSide;
     return fStripNumber < other.fStripNumber;
+}
+
+
+void SCTModuleHit::Draw() {
+    G4VVisManager* visManager = G4VVisManager::GetConcreteInstance();
+    if (!visManager) return;
+  
+    G4ThreeVector pos(fPosX, fPosY, fPosZ);
+    G4Circle circle(pos);
+    circle.SetScreenSize(5); // pixels
+    circle.SetFillStyle(G4Circle::filled);
+  
+    // Color by truth match status
+    G4Colour colour =  fColour;
+    G4cout << "Drawing hit at " << fPosX << ", " << fPosY << ", " << fPosZ  << " isReco = " << fIsReco << std::endl;
+    G4VisAttributes attribs(colour);
+    attribs.SetVisibility(true);
+    circle.SetVisAttributes(attribs);
+    visManager->Draw(circle);
+    // if (fIsReco){
+    //     G4cout << "Drawing reco hit at " << fPosX << ", " << fPosY << ", " << fPosZ << std::endl;
+    //     visManager->Draw(circle);
+    // }
 }

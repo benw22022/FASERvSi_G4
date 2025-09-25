@@ -7,6 +7,7 @@
 #include "G4ThreeVector.hh"
 #include  "G4LorentzVector.hh"
 #include "G4VPhysicalVolume.hh"
+#include "G4Colour.hh"
 
 #include <vector>
 #include <iostream>
@@ -21,6 +22,7 @@ public:
   inline void operator delete(void*);
   friend std::ostream& operator<<(std::ostream& os, const SCTModuleHit& hit);
   bool operator<(const SCTModuleHit& other) const;
+  void Draw() override;
   
   
   inline void SetPosition(G4double x, G4double y, G4double z) {
@@ -152,8 +154,8 @@ public:
   inline void SetIsPrimaryTrack(G4int isPrimary) { fIsPrimaryTrack = isPrimary; }
   inline void SetIsSecondaryTrack(G4int isSecondary) { fIsSecondaryTrack = isSecondary; }
 
-  inline void SetTruthMatched(bool matched) { isTruthMatched = matched; }
-  inline bool GetTruthMatched() const { return isTruthMatched; }
+  inline void SetTruthMatched(bool matched) { fIsTruthMatched = matched; }
+  inline bool GetTruthMatched() const { return fIsTruthMatched; }
 
   inline void SetPhysVol(G4VPhysicalVolume* physVol) { fPhysVol = physVol; }
   inline G4VPhysicalVolume* GetPhysVol() const { return fPhysVol; }
@@ -163,6 +165,15 @@ public:
 
   inline void SetStripRotation(const G4RotationMatrix& rotation) { fStripRotation = rotation; }
   inline G4RotationMatrix GetStripRotation() const { return fStripRotation; }
+
+  inline void SetIsReco(bool reco) { fIsReco = reco; }
+  inline bool GetIsReco() const { return fIsReco; }
+
+  inline void SetStripEnds(const std::pair<G4ThreeVector, G4ThreeVector>& ends) { fStripEnds = ends; }
+  inline std::pair<G4ThreeVector, G4ThreeVector> GetStripEnds() const { return fStripEnds; }
+
+  inline void SetColour(const G4Colour& colour){ fColour = colour; }
+  inline G4Colour GetColour() const {return fColour; }
 
 private:
   /// Position along x axis
@@ -203,7 +214,8 @@ private:
   G4int fModuleNumber = -1;    // Module number within a layer (0 to 8)
   G4int fLayerNumber = -1;     // Number of the tracking layer (0 to NTrackingLayers)
 
-  G4bool isTruthMatched = false;
+  G4bool fIsTruthMatched = false;
+  G4bool fIsReco = false;
  
   G4ThreeVector fTrackVertex{-999., -999., -999.};
   G4LorentzVector fTrackP4{0,0,0,0};
@@ -213,6 +225,9 @@ private:
   G4ThreeVector fStripCentre{-999., -999., -999.};
   G4RotationMatrix fStripRotation;
   G4VPhysicalVolume* fPhysVol;
+  std::pair<G4ThreeVector, G4ThreeVector> fStripEnds; // Coordinates of the two ends of the strip
+
+  G4Colour fColour = G4Colour::Red();
 
 };
 
