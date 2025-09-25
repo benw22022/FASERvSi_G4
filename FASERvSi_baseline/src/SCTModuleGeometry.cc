@@ -1,4 +1,5 @@
 #include "SCTModuleGeometry.hh"
+#include "G4IntersectionSolid.hh"
 #include <cmath>
 
 
@@ -18,8 +19,19 @@ SCTModuleGeometry::SCTModuleGeometry()
     fStrip_indiv_log = new G4LogicalVolume(fStrip_indiv, fSilicon, "strip_inidv_log", 0,0,0);
     fStrip_div = new G4PVDivision("strip_div", fStrip_indiv_log, fStrip_plane_log, kXAxis, fNstrips, 0 );
     
+    // Define the stereo angle rotation matrix
+    G4RotationMatrix* rot = new G4RotationMatrix();
+    rot->rotateZ(fStereoAngle);
+
     // Create a tracking plane that we can set to be senstive to record truth hits
-    G4Box* fTruthTrackerPlane = new G4Box("truth_tracker_plane", x_bounds/2, y_bounds/2, 0.1*mm);  // Very thin box
+    G4Box* fTruth_plane = new G4Box("strip_plane", fPlaneWidth/2, fStripLength/2, fPlaneSeparation/2);  // Oriented with long edge in y-direction
+    G4IntersectionSolid* fTruthTrackerPlane = new G4IntersectionSolid("truth_tracker_plane", 
+        fTruth_plane, 
+        fTruth_plane, 
+        rot, 
+        G4ThreeVector(0,0,0)
+    );
+
     fTruthTrackerPlane_log = new G4LogicalVolume(fTruthTrackerPlane, fAir, "truth_tracker_plane_log", 0,0,0);
     G4VPhysicalVolume* truth_tracker_plane_phys = new G4PVPlacement(
         0, 
@@ -40,9 +52,7 @@ SCTModuleGeometry::SCTModuleGeometry()
         true, 
         0);
 
-    // Apply stereo angle rotation around Z-axis for the back strip plane
-    G4RotationMatrix* rot = new G4RotationMatrix();
-    rot->rotateZ(fStereoAngle);  
+    // Apply stereo angle rotation around Z-axis for the back strip plane  
     G4VPhysicalVolume* strip_plane_side2_phys = new G4PVPlacement(
         rot, 
         G4ThreeVector(0, 0, fPlaneThickness/2 + fPlaneSeparation/2), 
@@ -67,8 +77,9 @@ SCTModuleGeometry::SCTModuleGeometry()
 
     // Make individual strips invisible in visualization (too many to display usefully)
     G4VisAttributes* strip_invis = new G4VisAttributes(G4Colour::Green());
-    // strip_invis->SetVisibility(false);
-    strip_invis->SetVisibility(true);
+    strip_invis->SetVisibility(false);
+    // strip_invis->SetForceWireframe(true);
+    // strip_invis->SetVisibility(true);
     fStrip_indiv_log->SetVisAttributes(strip_invis);
 }
 

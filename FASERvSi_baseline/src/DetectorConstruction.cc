@@ -56,6 +56,7 @@
 #include "DetectorConstruction.hh"
 #include "DetectorParameters.hh"
 #include "SCTModuleDetector.hh"
+#include "RecoSpacePointSD.hh"
 
 
 #include <string>
@@ -313,4 +314,7 @@ void DetectorConstruction::ConstructSDandField(){
   fSCT_strip_log->SetSensitiveDetector(sensDet);
   sdman->AddNewDetector(sensDet);
 
+  // Dummy Sensitive Detector so that we can visualise spacepoints in event display
+  auto* recoSD = new RecoSpacePointSD("RecoSpacePointsSD");
+  sdman->AddNewDetector(recoSD);
 }
