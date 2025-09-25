@@ -67,7 +67,6 @@ SCTModuleGeometry::SCTModuleGeometry()
     boxVisAtt->SetForceWireframe(true);
     boxVisAtt->SetVisibility(false);
     fModule_log->SetVisAttributes(boxVisAtt);
-    fTruthTrackerPlane_log->SetVisAttributes(boxVisAtt);
 
     // Set visibility attributes for silicon planes
     G4VisAttributes* strip_planeVisAtt = new G4VisAttributes(G4Colour::Green());
@@ -81,6 +80,12 @@ SCTModuleGeometry::SCTModuleGeometry()
     // strip_invis->SetForceWireframe(true);
     // strip_invis->SetVisibility(true);
     fStrip_indiv_log->SetVisAttributes(strip_invis);
+
+    // Truth tracker vis
+    G4VisAttributes* truthVisAtt = new G4VisAttributes(G4Colour::Brown());
+    truthVisAtt->SetForceSolid(true);
+    truthVisAtt->SetVisibility(true);
+    fTruthTrackerPlane_log->SetVisAttributes(truthVisAtt);
 }
 
 G4VPhysicalVolume* SCTModuleGeometry::PlaceModule(G4LogicalVolume* mother_log, const G4ThreeVector& position, G4RotationMatrix* rotation, G4int copyNo) const

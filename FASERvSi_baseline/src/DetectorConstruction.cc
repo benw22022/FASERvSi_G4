@@ -57,6 +57,7 @@
 #include "DetectorParameters.hh"
 #include "SCTModuleDetector.hh"
 #include "RecoSpacePointSD.hh"
+#include "TruthTrackerSD.hh"
 
 
 #include <string>
@@ -246,7 +247,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //* SCT module and tracking layers
   SCTModuleGeometry sctModule = SCTModuleGeometry();
   fSCT_strip_log = sctModule.GetStripLogical();
-  // fSCT_strip_log = sctModule.GetTruthTrackerPlaneLogical();
+  fTruthTracker_log = sctModule.GetTruthTrackerPlaneLogical();
   G4LogicalVolume* tracking_hoz_layer_log = constructHozTrackingLayerLogical(sctModule);
   G4LogicalVolume* tracking_vert_layer_log = constructVertTrackingLayerLogical(sctModule);
   G4Box* tracking_layer_box = dynamic_cast<G4Box*>(tracking_vert_layer_log->GetSolid());
@@ -316,12 +317,16 @@ void DetectorConstruction::ConstructSDandField(){
   G4SDManager *sdman = G4SDManager::GetSDMpointer();
 
   // Make the strips sensitive
-  std::string detName = "strip_detector";
-  SCTModuleDetector* sensDet = new SCTModuleDetector(detName);
+  SCTModuleDetector* sensDet = new SCTModuleDetector("strip_detector");
   fSCT_strip_log->SetSensitiveDetector(sensDet);
   sdman->AddNewDetector(sensDet);
 
   // Dummy Sensitive Detector so that we can visualise spacepoints in event display
   auto* recoSD = new RecoSpacePointSD("RecoSpacePointsSD");
   sdman->AddNewDetector(recoSD);
+
+  // Add a sensitive detector for truth matching
+  auto* truthTrackerSD = new TruthTrackerSD("truth_tracker");
+  fTruthTracker_log->SetSensitiveDetector(truthTrackerSD);
+  sdman->AddNewDetector(truthTrackerSD);
 }

@@ -64,6 +64,7 @@ private:
   
   G4LogicalVolume* fTarget_log;
   G4LogicalVolume* fSCT_strip_log;
+  G4LogicalVolume* fTruthTracker_log;
 
   std::vector<G4VPhysicalVolume*> fSD_phys;
   std::vector<G4VPhysicalVolume*> fTarget_phys;

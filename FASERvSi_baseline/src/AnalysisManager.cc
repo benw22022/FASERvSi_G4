@@ -500,7 +500,7 @@ void AnalysisManager::FillTrajectoriesTree(const G4Event* event)
 void AnalysisManager::FillHitsOutput()
 {
   G4cout << "==== Filling Hits output trees ====" << G4endl;
-
+  return; 
   // loop over the detected Hits sensitive volumes
   int nHits = 0;
   // auto sdManager = G4SDManager::GetSDMpointer();
