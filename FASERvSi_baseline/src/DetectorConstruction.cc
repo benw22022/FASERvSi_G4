@@ -274,17 +274,24 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4double mass = density/(g/cm3) * volume/cm3;  // grams
     target_mass = target_mass + mass;
 
-    checkOverlaps(Target_phys);
+    checkOverlaps(Target_phys); // make sure that there are no overlaps - GENIE will make you suffer if there are!./
 
     G4VPhysicalVolume* SD_phys;
     pos += tungsten_thickness/2 + tracking_layer_thickness/2;
+    
+    G4double shift = DetectorParameters::Get()->flayerShift;
+    G4ThreeVector trans = G4ThreeVector(0, shift, pos);  
+    if (i%4 == 1) trans = G4ThreeVector(shift, 0, pos);   // shift the position of every layer a bit so there are no holes
+    if (i%4 == 2) trans = G4ThreeVector(0, -shift, pos);
+    if (i%4 == 3) trans = G4ThreeVector(-shift, 0, pos);
+
     if (i%2 == 0)
     {
-      SD_phys = new G4PVPlacement(0, G4ThreeVector(0,  0, pos), tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
+      SD_phys = new G4PVPlacement(0, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
     }
     else
     {
-      SD_phys = new G4PVPlacement(0, G4ThreeVector(0,  0, pos), tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
+      SD_phys = new G4PVPlacement(0, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
     }
     pos += tungsten_thickness/2 + tracking_layer_thickness/2;
     checkOverlaps(SD_phys);
@@ -307,10 +314,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 void DetectorConstruction::ConstructSDandField(){
   
   G4SDManager *sdman = G4SDManager::GetSDMpointer();
+
+  // Make the strips sensitive
   std::string detName = "strip_detector";
   SCTModuleDetector* sensDet = new SCTModuleDetector(detName);
-
-  G4cout << "Attaching sensitive detector to logical volume " << fSCT_strip_log->GetName() << " at address " << fSCT_strip_log << G4endl;
   fSCT_strip_log->SetSensitiveDetector(sensDet);
   sdman->AddNewDetector(sensDet);
 

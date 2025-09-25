@@ -31,6 +31,7 @@ class DetectorParameters  {
     G4double fSCTThickness;
     
     G4double fnumSCTLayers;
+    G4double flayerShift;
     
     G4double ftargetStartPosZ;
     G4double fdetWidth;

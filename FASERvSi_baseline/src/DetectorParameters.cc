@@ -10,11 +10,12 @@ DetectorParameters::DetectorParameters()
     fexpHall_z = 3*m;
     
     // fnumSCTLayers = 50;
-    fnumSCTLayers = 2;
+    fnumSCTLayers = 50;
     ftargetStartPosZ = 0*mm;
     fdetWidth = 300*mm;
     // fdetHeight = 300*2*mm;
     fdetHeight = 300*mm;
+    flayerShift = 2*mm; // amount to translate layers up/down left/right to plug gaps
 
     // ftungstenThickness = 13.92*mm;
     ftungstenThickness = 2*mm;

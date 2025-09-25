@@ -43,7 +43,7 @@ void SCTModuleHit::Draw() {
   
     // Color by truth match status
     G4Colour colour =  fColour;
-    G4cout << "Drawing hit at " << fPosX << ", " << fPosY << ", " << fPosZ  << " isReco = " << fIsReco << std::endl;
+    // G4cout << "Drawing hit at " << fPosX << ", " << fPosY << ", " << fPosZ  << " isReco = " << fIsReco << std::endl;
     G4VisAttributes attribs(colour);
     attribs.SetVisibility(true);
     circle.SetVisAttributes(attribs);
