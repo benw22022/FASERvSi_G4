@@ -45,7 +45,7 @@ class SCTModuleGeometry {
         static constexpr G4double fStripLength = 128.05*mm;
         static constexpr G4double fPlaneWidth = 63.56*mm;
         static constexpr G4double fPlaneThickness = 285*1e-3*mm;
-        static constexpr G4double fPlaneSeparation = 580*um;
+        static constexpr G4double fPlaneSeparation = 0.1*mm;  //From p52 of ID TDR https://cds.cern.ch/record/331063/files/ATLAS-TDR-4-Volume-I.pdf - "rectangles are then sandwiched together, 0.1 mm apart"
         static constexpr G4double fModuleHeight = 7.08*mm;
 
         G4Box* fModuleBoundingBox;
