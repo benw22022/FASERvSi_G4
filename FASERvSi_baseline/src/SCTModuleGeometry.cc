@@ -8,29 +8,35 @@ SCTModuleGeometry::SCTModuleGeometry()
     // Calculate bounding box dimensions
     G4double x_bounds = fStripLength * sin(fStereoAngle) + fPlaneWidth * cos(fStereoAngle);
     G4double y_bounds = fStripLength * cos(fStereoAngle) + fPlaneWidth * sin(fStereoAngle);
-    G4double z_bounds = (fPlaneThickness * 2) + fPlaneSeparation;
+    G4double z_bounds = fModuleHeight;
 
     fModuleBoundingBox = new G4Box("module_bounding_box", x_bounds/2, y_bounds/2, z_bounds/2);  // Oriented with long edge in y-direction
     fModule_log = new G4LogicalVolume(fModuleBoundingBox, fAir, "module_log", 0,0,0);
 
     G4Box* fStrip_plane = new G4Box("strip_plane", fPlaneWidth/2, fStripLength/2, fPlaneThickness/2);  // Oriented with long edge in y-direction
-    G4Box* fStrip_indiv = new G4Box("strip_indiv", fPlaneWidth/2, (fPlaneWidth/fNstrips)/2, fPlaneThickness/2);  // Oriented with long edge in y-direction
+    G4Box* fStrip_indiv = new G4Box("strip_indiv", fPlaneWidth/2, stripWidth()/2, fPlaneThickness/2);  // Oriented with long edge in y-direction
     fStrip_plane_log = new G4LogicalVolume(fStrip_plane, fSilicon, "strip_plane_log", 0,0,0);
     fStrip_indiv_log = new G4LogicalVolume(fStrip_indiv, fSilicon, "strip_inidv_log", 0,0,0);
-    fStrip_div = new G4PVDivision("strip_div", fStrip_indiv_log, fStrip_plane_log, kXAxis, fNstrips, 0 );
+    fStrip_div = new G4PVDivision("strip_div", fStrip_indiv_log, fStrip_plane_log, kXAxis, fNstrips, 0);
     
     // Define the stereo angle rotation matrix
-    G4RotationMatrix* rot = new G4RotationMatrix();
-    rot->rotateZ(fStereoAngle);
+    // In https://www.sciencedirect.com/science/article/pii/S016890020601388X
+    // It is documented that the strips are counter-rotated by 20 mrad each side to give a 40 mrad stereo angle
+    G4RotationMatrix* rot_side1 = new G4RotationMatrix();
+    rot_side1->rotateZ(fStereoAngle/2);
+
+    G4RotationMatrix* rot_side2 = new G4RotationMatrix();
+    rot_side2->rotateZ(-fStereoAngle/2);
 
     // Create a tracking plane that we can set to be senstive to record truth hits
-    G4Box* fTruth_plane = new G4Box("strip_plane", fPlaneWidth/2, fStripLength/2, fPlaneSeparation/2);  // Oriented with long edge in y-direction
-    G4IntersectionSolid* fTruthTrackerPlane = new G4IntersectionSolid("truth_tracker_plane", 
-        fTruth_plane, 
-        fTruth_plane, 
-        rot, 
-        G4ThreeVector(0,0,0)
-    );
+    // G4Box* fTruth_plane = new G4Box("strip_plane", fPlaneWidth/2, fStripLength/2, fPlaneSeparation/2);  // Oriented with long edge in y-direction
+    G4Box* fTruthTrackerPlane = new G4Box("strip_plane", fPlaneWidth/2, fStripLength/2, fPlaneSeparation/2);  // Oriented with long edge in y-direction
+    // G4IntersectionSolid* fTruthTrackerPlane = new G4IntersectionSolid("truth_tracker_plane", 
+    //     fTruth_plane, 
+    //     fTruth_plane, 
+    //     rot, 
+    //     G4ThreeVector(0,0,0)
+    // );
 
     fTruthTrackerPlane_log = new G4LogicalVolume(fTruthTrackerPlane, fAir, "truth_tracker_plane_log", 0,0,0);
     G4VPhysicalVolume* truth_tracker_plane_phys = new G4PVPlacement(
@@ -44,7 +50,7 @@ SCTModuleGeometry::SCTModuleGeometry()
         
     // Place the two strip planes inside the module bounding box
     G4VPhysicalVolume* strip_plane_side1_phys = new G4PVPlacement(
-        0, 
+        rot_side1, 
         G4ThreeVector(0, 0, -fPlaneThickness/2 - fPlaneSeparation/2), 
         fStrip_plane_log, 
         "SCT_front_phys", 
@@ -54,7 +60,7 @@ SCTModuleGeometry::SCTModuleGeometry()
 
     // Apply stereo angle rotation around Z-axis for the back strip plane  
     G4VPhysicalVolume* strip_plane_side2_phys = new G4PVPlacement(
-        rot, 
+        rot_side2, 
         G4ThreeVector(0, 0, fPlaneThickness/2 + fPlaneSeparation/2), 
         fStrip_plane_log, 
         "SCT_back_phys", 
@@ -84,7 +90,8 @@ SCTModuleGeometry::SCTModuleGeometry()
     // Truth tracker vis
     G4VisAttributes* truthVisAtt = new G4VisAttributes(G4Colour::Brown());
     truthVisAtt->SetForceSolid(true);
-    truthVisAtt->SetVisibility(true);
+    // truthVisAtt->SetVisibility(true);
+    truthVisAtt->SetVisibility(false);
     fTruthTrackerPlane_log->SetVisAttributes(truthVisAtt);
 }
 

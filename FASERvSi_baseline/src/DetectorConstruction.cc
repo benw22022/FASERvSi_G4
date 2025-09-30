@@ -150,14 +150,14 @@ G4LogicalVolume* constructVertTrackingLayerLogical(SCTModuleGeometry& sctModule)
   G4ThreeVector m7_transl = G4ThreeVector(sct_module_box->GetXHalfLength(), -sct_module_box->GetYHalfLength(), 0);
   G4ThreeVector m8_transl = G4ThreeVector(3*sct_module_box->GetXHalfLength(), -sct_module_box->GetYHalfLength(), 0);
 
-  sctModule.PlaceModule(tracking_layer_log, m1_transl, 0, 1);
-  sctModule.PlaceModule(tracking_layer_log, m2_transl, 0, 2);
-  sctModule.PlaceModule(tracking_layer_log, m3_transl, 0, 3);
-  sctModule.PlaceModule(tracking_layer_log, m4_transl, 0, 4);
-  sctModule.PlaceModule(tracking_layer_log, m5_transl, 0, 5);
-  sctModule.PlaceModule(tracking_layer_log, m6_transl, 0, 6);
-  sctModule.PlaceModule(tracking_layer_log, m7_transl, 0, 7);
-  sctModule.PlaceModule(tracking_layer_log, m8_transl, 0, 8);
+  sctModule.PlaceModule(tracking_layer_log, m1_transl, 0, 0);
+  sctModule.PlaceModule(tracking_layer_log, m2_transl, 0, 1);
+  sctModule.PlaceModule(tracking_layer_log, m3_transl, 0, 2);
+  sctModule.PlaceModule(tracking_layer_log, m4_transl, 0, 3);
+  sctModule.PlaceModule(tracking_layer_log, m5_transl, 0, 4);
+  sctModule.PlaceModule(tracking_layer_log, m6_transl, 0, 5);
+  sctModule.PlaceModule(tracking_layer_log, m7_transl, 0, 6);
+  sctModule.PlaceModule(tracking_layer_log, m8_transl, 0, 7);
 
   G4VisAttributes* tracking_layerVisAtt = new G4VisAttributes(G4Colour::Blue());
   tracking_layerVisAtt->SetForceWireframe(true);
@@ -205,14 +205,14 @@ G4LogicalVolume* constructHozTrackingLayerLogical(SCTModuleGeometry& sctModule)
   G4ThreeVector m7_transl = G4ThreeVector(-sct_module_box->GetYHalfLength(), -3*sct_module_box->GetXHalfLength(), 0);
   G4ThreeVector m8_transl = G4ThreeVector(sct_module_box->GetYHalfLength(), -3*sct_module_box->GetXHalfLength(), 0);
 
-  sctModule.PlaceModule(tracking_layer_log, m1_transl, rot90deg, 1);
-  sctModule.PlaceModule(tracking_layer_log, m2_transl, rot90deg, 2);
-  sctModule.PlaceModule(tracking_layer_log, m3_transl, rot90deg, 3);
-  sctModule.PlaceModule(tracking_layer_log, m4_transl, rot90deg, 4);
-  sctModule.PlaceModule(tracking_layer_log, m5_transl, rot90deg, 5);
-  sctModule.PlaceModule(tracking_layer_log, m6_transl, rot90deg, 6);
-  sctModule.PlaceModule(tracking_layer_log, m7_transl, rot90deg, 7);
-  sctModule.PlaceModule(tracking_layer_log, m8_transl, rot90deg, 8);
+  sctModule.PlaceModule(tracking_layer_log, m1_transl, rot90deg, 0);
+  sctModule.PlaceModule(tracking_layer_log, m2_transl, rot90deg, 1);
+  sctModule.PlaceModule(tracking_layer_log, m3_transl, rot90deg, 2);
+  sctModule.PlaceModule(tracking_layer_log, m4_transl, rot90deg, 3);
+  sctModule.PlaceModule(tracking_layer_log, m5_transl, rot90deg, 4);
+  sctModule.PlaceModule(tracking_layer_log, m6_transl, rot90deg, 5);
+  sctModule.PlaceModule(tracking_layer_log, m7_transl, rot90deg, 6);
+  sctModule.PlaceModule(tracking_layer_log, m8_transl, rot90deg, 7);
 
   G4VisAttributes* tracking_layerVisAtt = new G4VisAttributes(G4Colour::Blue());
   tracking_layerVisAtt->SetForceWireframe(true);
@@ -286,14 +286,30 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     if (i%4 == 2) trans = G4ThreeVector(0, -shift, pos);
     if (i%4 == 3) trans = G4ThreeVector(-shift, 0, pos);
 
-    if (i%2 == 0)
+    G4RotationMatrix* rot = new G4RotationMatrix();
+    rot->rotateZ(180 * deg);  // flip every layer
+
+    if (i%4 == 0)
     {
+      // SD_phys = new G4PVPlacement(0, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
       SD_phys = new G4PVPlacement(0, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
     }
-    else
+    else if (i%4 == 1)
     {
+      // SD_phys = new G4PVPlacement(0, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
       SD_phys = new G4PVPlacement(0, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
     }
+    else if (i%4 == 2)
+    {
+      // SD_phys = new G4PVPlacement(0, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
+      SD_phys = new G4PVPlacement(rot, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
+    }
+    else if (i%4 == 3)
+    {
+      // SD_phys = new G4PVPlacement(0, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
+      SD_phys = new G4PVPlacement(rot, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
+    }
+
     pos += tungsten_thickness/2 + tracking_layer_thickness/2;
     checkOverlaps(SD_phys);
   }
