@@ -41,7 +41,7 @@ namespace SpacePointUtils {
     }
 
     // 2D cross product helper
-    static G4double cross2D(const G4TwoVector& v1, const G4TwoVector& v2) {
+    G4double cross2D(const G4TwoVector& v1, const G4TwoVector& v2) {
         return v1.x() * v2.y() - v1.y() * v2.x();
     }
 
