@@ -31,6 +31,12 @@ bool SCTModuleHit::operator<(const SCTModuleHit& other) const {
     return fStripNumber < other.fStripNumber;
 }
 
+bool SCTModuleHit::operator==(const SCTModuleHit& other) const {
+    return fLayerNumber == other.fLayerNumber &&
+           fModuleNumber == other.fModuleNumber &&
+           fStripSide == other.fStripSide &&
+           fStripNumber == other.fStripNumber;
+}
 
 void SCTModuleHit::Draw() {
     G4VVisManager* visManager = G4VVisManager::GetConcreteInstance();
@@ -38,7 +44,7 @@ void SCTModuleHit::Draw() {
   
     G4ThreeVector pos(fPosX, fPosY, fPosZ);
     G4Circle circle(pos);
-    circle.SetScreenSize(5); // pixels
+    circle.SetScreenSize(4); // pixels
     circle.SetFillStyle(G4Circle::filled);
   
     // Color by truth match status

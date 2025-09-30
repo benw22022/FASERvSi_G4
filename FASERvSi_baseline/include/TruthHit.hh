@@ -118,6 +118,9 @@ public:
   inline void SetColour(const G4Colour& colour){ fColour = colour; }
   inline G4Colour GetColour() const {return fColour; }
 
+  inline void SetTruthHitID(G4long id) { fTruthHitID = id; }
+  inline G4long GetTruthHitID() const { return fTruthHitID; }
+
 private:
   /// Position along x axis
   G4double fPosX = -1;
@@ -151,8 +154,9 @@ private:
   G4LorentzVector fTrackP4{0,0,0,0};
   G4int fIsPrimaryTrack = 0; // 1 if primary track, 0 otherwise
   G4int fIsSecondaryTrack = 0; // 1 if secondary track, 0 otherwise
+  G4long fTruthHitID = -1;
 
-  G4Colour fColour = G4Colour::Green();
+  G4Colour fColour = G4Colour::Brown();
 
 };
 

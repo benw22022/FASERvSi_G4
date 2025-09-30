@@ -80,7 +80,8 @@ class AnalysisManager {
     TTree*   fPrim;
 
     TDirectory* fHits;
-    TTree*   fActsHitsTree;
+    TTree*   fRecoHitsTree;
+    TTree*   fTruthHitsTree;
     TTree*   fActsParticlesTree;
 
     // track to primary ancestor
@@ -151,28 +152,42 @@ class AnalysisManager {
     //---------------------------------------------------
     // OUTPUT VARIABLES FOR Hits TREES
 
-    // Acts Hit Information - the types are set to match the types expected by Acts::RootSimHitReader
-    UInt_t ActsHitsEventID;
-    ULong64_t ActsHitsGeometryID;
-    ULong64_t ActsHitsParticleID;
-    Float_t ActsHitsX;
-    Float_t ActsHitsY;
-    Float_t ActsHitsZ;
-    Float_t ActsHitsT;
-    Float_t ActsHitsPx;
-    Float_t ActsHitsPy;
-    Float_t ActsHitsPz;
-    Float_t ActsHitsE;
-    Float_t ActsHitsDeltaPx;
-    Float_t ActsHitsDeltaPy;
-    Float_t ActsHitsDeltaPz;
-    Float_t ActsHitsDeltaE;
-    Int_t ActsHitsIndex;
-    UInt_t ActsHitsVolumeID;
-    UInt_t ActsHitsBoundaryID;
-    UInt_t ActsHitsLayerID;
-    UInt_t ActsHitsApproachID;
-    UInt_t ActsHitsSensitiveID;
+    //* Reco space points
+    UInt_t recoHitsEventID;
+    std::vector<Float_t> recoHitsX;
+    std::vector<Float_t> recoHitsY;
+    std::vector<Float_t> recoHitsZ;
+    std::vector<Int_t> recoHitsPDGC;
+    std::vector<bool> recoHitsIsTruthMatched;
+    std::vector<UInt_t> recoHitsModuleID;
+    std::vector<UInt_t> recoHitsLayerID;
+    std::vector<UInt_t> recoHitsTrackID;
+    std::vector<UInt_t> recoHitsParentID;
+    std::vector<UInt_t> recoHitsTruthHitID;
+    std::vector<Float_t> recoHitsPx;
+    std::vector<Float_t> recoHitsPy;
+    std::vector<Float_t> recoHitsPz;
+    std::vector<Float_t> recoHitsE;
+    std::vector<Float_t> recoHitsCharge;
+    std::vector<Float_t> recoHitsMass;
+
+    //* Truth hits
+    UInt_t truthHitsEventID;
+    std::vector<Float_t> truthHitsX;
+    std::vector<Float_t> truthHitsY;
+    std::vector<Float_t> truthHitsZ;
+    std::vector<Int_t> truthHitsPDGC;
+    std::vector<UInt_t> truthHitsModuleID;
+    std::vector<UInt_t> truthHitsLayerID;
+    std::vector<UInt_t> truthHitsTrackID;
+    std::vector<UInt_t> truthHitsParentID;
+    std::vector<Float_t> truthHitsPx;
+    std::vector<Float_t> truthHitsPy;
+    std::vector<Float_t> truthHitsPz;
+    std::vector<Float_t> truthHitsE;
+    std::vector<Float_t> truthHitsMass;
+    std::vector<Float_t> truthHitsCharge;
+    std::vector<UInt_t> truthHitsID;
 
     // Acts Particle Information - need the truth info on the particles in order to do the truth tracking
     std::vector<std::uint64_t> ActsParticlesParticleId;

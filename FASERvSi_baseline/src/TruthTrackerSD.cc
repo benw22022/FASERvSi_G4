@@ -5,6 +5,19 @@
 #include "G4Box.hh"
 #include "TruthHit.hh"
 
+static G4String GenerateRandom12DigitNumber() {
+  // Generate a random number in [0, 1)
+  G4double rand = G4UniformRand();
+
+  // Scale to 12-digit range: [100000000000, 999999999999]
+  G4long long num = static_cast<G4long long>(rand * 9e11) + 1e11;
+
+  // Convert to string if needed
+  std::ostringstream oss;
+  oss << std::setw(12) << std::setfill('0') << num;
+  return oss.str(); // returns a G4String with 12 digits
+}
+
 
 TruthTrackerSD::TruthTrackerSD(G4String name) :
   G4VSensitiveDetector(name) {
@@ -57,12 +70,19 @@ G4bool TruthTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist){
   G4double time = track->GetDynamicParticle()->Get4Momentum().t();
   
   G4VPhysicalVolume* physVol = preStepPoint->GetPhysicalVolume();
-  G4int module_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(0);
-  G4int layer_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(1);
+  G4int module_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(1);
+  G4int layer_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(2);
 
   G4TouchableHistory* touchable = (G4TouchableHistory*)(preStepPoint->GetTouchable());
   G4ThreeVector sensorCenterGlobal = touchable->GetTranslation();
   G4double sensorCentreZ = sensorCenterGlobal.z();
+
+  // G4cout << G4endl;
+  // for (int i = 0; i <= touchable->GetHistoryDepth(); ++i) {
+  //   G4String volName = touchable->GetVolume(i)->GetName();
+  //   G4int copyNum = touchable->GetCopyNumber(i);
+  //   G4cout << "Level " << i << ": " << volName << " (copy " << copyNum << ")" << G4endl;
+  // }
 
   TruthHit* tmpHit = new TruthHit();
 
@@ -81,6 +101,7 @@ G4bool TruthTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist){
   tmpHit->SetT(time/ns);
   tmpHit->SetTrackVertex(track->GetVertexPosition()/mm);
   tmpHit->SetTrackP4(track->GetDynamicParticle()->Get4Momentum()/GeV);
+  tmpHit->SetTruthHitID(std::stol(GenerateRandom12DigitNumber()));
   if (track->GetParentID() == 0) {
     tmpHit->SetIsPrimaryTrack(1);
     tmpHit->SetIsSecondaryTrack(0);
@@ -90,7 +111,8 @@ G4bool TruthTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist){
     tmpHit->SetIsSecondaryTrack(1);
   }
 
-  G4cout << "Truth hit: " << *tmpHit << G4endl;
+  // tmpHit->Draw();
+  // G4cout << "Truth hit: " << *tmpHit << G4endl;
 
   fHitCollection->insert(tmpHit);
   fNHits++;

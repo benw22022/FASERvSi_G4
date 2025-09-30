@@ -80,6 +80,13 @@ G4bool SCTModuleDetector::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist)
   G4int module_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(2);
   G4int layer_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(3);
 
+  if (strip_number == 0 || strip_number == 769)
+  {
+    // G4cout << "Hit on edge strips, ignoring" << G4endl;
+    return false; // ignore hits on guard rings
+  }
+
+
   Channel channel;
   channel.setStrip(strip_number);
   channel.setSide(strip_side);

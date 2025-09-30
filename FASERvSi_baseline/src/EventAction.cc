@@ -6,6 +6,7 @@
 #include "G4Circle.hh"
 #include "G4VisAttributes.hh"
 #include "AnalysisManager.hh"
+#include "TruthHit.hh"
 #include "reco/SpacePoint.hh"
 
 using namespace std;
@@ -55,13 +56,18 @@ void EventAction::EndOfEventAction(const G4Event* event)
     G4cout << " * No secondary tracks (excluding gamma) produced" << G4endl;
 
   // skip AnalysisManager if there are no tracks at all!
-  // if(!fNPrimaryTrack.GetValue() && !fNSecondaryTrack.GetValue() && !fNSecondaryTrackNotGamma.GetValue()) 
-  //   return;
+  if(!fNPrimaryTrack.GetValue() && !fNSecondaryTrack.GetValue() && !fNSecondaryTrackNotGamma.GetValue()) 
+    return;
   auto* inputHitsCollection = dynamic_cast<SCTModuleHitCollection*>(event->GetHCofThisEvent()->GetHC(G4SDManager::GetSDMpointer()->GetCollectionID("strip_detector")));
-  auto* outputHitsCollection = new SCTModuleHitCollection("RecoSpacePointsSD", "RecoSpacePoints");
+  auto* outputHitsCollection = new SCTModuleHitCollection("RecoSpacePoints", "RecoSpacePoints");
+  auto* truthHitsCollection = dynamic_cast<TruthHitCollection*>(event->GetHCofThisEvent()->GetHC(G4SDManager::GetSDMpointer()->GetCollectionID("truth_tracker")));
   
-  makeSpacePoints(inputHitsCollection, outputHitsCollection);
-  G4int recoHCID = event->GetHCofThisEvent()->GetNumberOfCollections();
+  // Create space points from strip hits
+  SpacePointUtils::makeSpacePoints(inputHitsCollection, outputHitsCollection);
+  SpacePointUtils::truthMatchSpacePoints(outputHitsCollection, truthHitsCollection);
+
+  // Regsiter the new hits collection with the event
+  G4int recoHCID = G4SDManager::GetSDMpointer()->GetCollectionID("RecoSpacePoints");
   event->GetHCofThisEvent()->AddHitsCollection(recoHCID, outputHitsCollection);
 
   AnalysisManager* ana = AnalysisManager::GetInstance();

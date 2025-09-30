@@ -9,6 +9,7 @@ G4ThreadLocal G4Allocator<TruthHit>* truthHitAllocator = nullptr;
 
 std::ostream& operator<<(std::ostream& os, const TruthHit& hit) {
     os << "Truth Hit ["
+       << "pos : " << hit.GetX() << ", " << hit.GetY() << ", " << hit.GetZ()
        << ", Module: " << hit.GetModuleNumber()
        << ", Layer: " << hit.GetLayerNumber()
        << ", PDG: " << hit.GetPDGID()
@@ -35,12 +36,12 @@ void TruthHit::Draw() {
   
     G4ThreeVector pos(fPosX, fPosY, fPosZ);
     G4Circle circle(pos);
-    circle.SetScreenSize(5); // pixels
+    circle.SetScreenSize(3); // pixels
     circle.SetFillStyle(G4Circle::filled);
 
-    G4cout << "Drawing truth hit at " << fPosX << ", " << fPosY << ", " << fPosZ << std::endl;
+    // G4cout << "Drawing truth hit at " << fPosX << ", " << fPosY << ", " << fPosZ << std::endl;
     G4VisAttributes attribs(fColour);
     attribs.SetVisibility(true);
     circle.SetVisAttributes(attribs);
-    visManager->Draw(circle);
+    // visManager->Draw(circle);
 }

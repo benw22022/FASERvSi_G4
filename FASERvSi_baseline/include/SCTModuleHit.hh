@@ -20,6 +20,7 @@ public:
 
   inline void* operator new(size_t);
   inline void operator delete(void*);
+  bool operator==(const SCTModuleHit& other) const;
   friend std::ostream& operator<<(std::ostream& os, const SCTModuleHit& hit);
   bool operator<(const SCTModuleHit& other) const;
   void Draw() override;
@@ -154,8 +155,8 @@ public:
   inline void SetIsPrimaryTrack(G4int isPrimary) { fIsPrimaryTrack = isPrimary; }
   inline void SetIsSecondaryTrack(G4int isSecondary) { fIsSecondaryTrack = isSecondary; }
 
-  inline void SetTruthMatched(bool matched) { fIsTruthMatched = matched; }
-  inline bool GetTruthMatched() const { return fIsTruthMatched; }
+  inline void SetIsTruthMatched(bool matched) { fIsTruthMatched = matched; }
+  inline bool GetIsTruthMatched() const { return fIsTruthMatched; }
 
   inline void SetPhysVol(G4VPhysicalVolume* physVol) { fPhysVol = physVol; }
   inline G4VPhysicalVolume* GetPhysVol() const { return fPhysVol; }
@@ -174,6 +175,9 @@ public:
 
   inline void SetColour(const G4Colour& colour){ fColour = colour; }
   inline G4Colour GetColour() const {return fColour; }
+
+  inline void SetTruthHitID(G4long id) { fTruthHitID = id; }
+  inline G4long GetTruthHitID() const { return fTruthHitID; }
 
 private:
   /// Position along x axis
@@ -216,6 +220,7 @@ private:
 
   G4bool fIsTruthMatched = false;
   G4bool fIsReco = false;
+  G4long fTruthHitID = -1;
  
   G4ThreeVector fTrackVertex{-999., -999., -999.};
   G4LorentzVector fTrackP4{0,0,0,0};
@@ -227,7 +232,7 @@ private:
   G4VPhysicalVolume* fPhysVol;
   std::pair<G4ThreeVector, G4ThreeVector> fStripEnds; // Coordinates of the two ends of the strip
 
-  G4Colour fColour = G4Colour::Red();
+  G4Colour fColour = G4Colour::White();
 
 };
 
