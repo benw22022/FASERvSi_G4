@@ -268,6 +268,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   {
     fNLayers++;
     G4VPhysicalVolume* Target_phys = new G4PVPlacement(0, G4ThreeVector(0, 0, pos), Target_log, "Target_phys", experimentalHall_log, false, i);
+    fTarget_phys.push_back(Target_phys);
     auto solid = Target_log->GetSolid();
     auto material = Target_log->GetMaterial();
     G4double volume = solid->GetCubicVolume();

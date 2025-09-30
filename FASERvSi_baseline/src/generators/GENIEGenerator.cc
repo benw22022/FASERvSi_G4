@@ -2,6 +2,7 @@
 #include "generators/GENIEGenerator.hh"
 #include "generators/GENIEGeneratorMessenger.hh"
 #include "generators/GeneratorVertexMetadata.hh"
+#include "DetectorConstruction.hh"
 
 #include "G4PrimaryVertex.hh"
 #include "G4PrimaryParticle.hh"
@@ -10,6 +11,13 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Exception.hh"
 #include "G4LorentzVector.hh"
+#include "G4RunManager.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4LogicalVolume.hh"
+#include "G4VSolid.hh"
+#include "G4Box.hh"
+#include "G4VisExtent.hh"
+#include "G4ThreeVector.hh"
 #include "Randomize.hh"
 
 #include "TMath.h"
@@ -23,7 +31,7 @@ GENIEGenerator::GENIEGenerator()
 
   fGSTFile = nullptr;
   fGSTTree = nullptr;
-  fRandomVtx = true;
+  fRandomVtx = false;
   fEventCounter = 0;
 }
 
@@ -160,15 +168,15 @@ void GENIEGenerator::GeneratePrimaries(G4Event* anEvent)
   G4LorentzVector fslP4(m_pxl*GeV,m_pyl*GeV,m_pzl*GeV,m_El*GeV);
   G4LorentzVector neuX4;
 
+
   // G4Random::setTheSeed(currentIdx+1);
-  // if(fRandomVtx){
-  //   neuX4.setX(GeometricalParameters::Get()->GetFLArEPosition().x() +
-  //             (G4UniformRand()-0.5) * GeometricalParameters::Get()->GetFLArEFidVolSize().x());
-  //   neuX4.setY(GeometricalParameters::Get()->GetFLArEPosition().y() +
-  //             (G4UniformRand()-0.5) * GeometricalParameters::Get()->GetFLArEFidVolSize().y());
-  //   neuX4.setZ(GeometricalParameters::Get()->GetFLArEPosition().z() +
-  //             (G4UniformRand()-0.5) * GeometricalParameters::Get()->GetFLArEFidVolSize().z());
-  //   neuX4.setT(0.);
+  if(fRandomVtx){
+    G4ThreeVector rdm_vtx = GenerateRandomPoint(currentIdx);
+    neuX4.setX(rdm_vtx.x());
+    neuX4.setY(rdm_vtx.y());
+    neuX4.setZ(rdm_vtx.z());
+    neuX4.setT(0.);
+  }
   // } else {
   //   neuX4.setX(0.*m);
   //   neuX4.setY(0.*m);
@@ -323,4 +331,45 @@ G4String GENIEGenerator::EncodeProcessName() const
   else if(m_nuel) process += " nuELASTIC";
 
   return process;
+}
+
+
+
+G4ThreeVector GENIEGenerator::GenerateRandomPoint(G4int currentIdx) const {
+  auto *runManager = G4RunManager::GetRunManager();
+  auto detector = (DetectorConstruction*) (runManager->GetUserDetectorConstruction());
+
+  auto volumes = detector->GetTargetPhysVols();
+
+  if (volumes.empty()) return G4ThreeVector();
+
+  // Step 1: Randomly pick a volume
+  size_t index = static_cast<size_t>(G4UniformRand() * volumes.size());
+  G4VPhysicalVolume* physVol = volumes[index];
+
+  // Step 2: Get the solid
+  G4LogicalVolume* logVol = physVol->GetLogicalVolume();
+  G4VSolid* solid = logVol->GetSolid();
+  const G4Box* box = dynamic_cast<const G4Box*>(solid);
+  if (!box) {
+    G4Exception("SamplePointInSolid", "InvalidSolid", FatalException,
+                "Only G4Box supported in this example.");
+  }
+
+  G4double dx = box->GetXHalfLength();
+  G4double dy = box->GetYHalfLength();
+  G4double dz = box->GetZHalfLength();
+
+  G4Random::setTheSeed(currentIdx+1);
+  G4ThreeVector point;
+  do {
+    point = G4ThreeVector(
+      (2 * G4UniformRand() - 1) * dx,
+      (2 * G4UniformRand() - 1) * dy,
+      (2 * G4UniformRand() - 1) * dz
+    );
+  } while (solid->Inside(point) != kInside);
+
+  // Transform to global coordinates
+  return physVol->GetObjectTranslation() + point;
 }

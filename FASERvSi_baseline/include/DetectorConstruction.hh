@@ -51,6 +51,7 @@ public:
 
   G4int GetNlayers() const { return fNLayers; }
   G4int GetModulesPerLayer() const { return fModulesPerLayer; }
+  std::vector<G4VPhysicalVolume*> GetTargetPhysVols() const { return fTarget_phys; }
 
 private:
   void DefineMaterials();

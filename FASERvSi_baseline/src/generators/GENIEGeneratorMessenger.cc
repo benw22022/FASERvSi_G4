@@ -27,7 +27,7 @@ GENIEGeneratorMessenger::GENIEGeneratorMessenger(GENIEGenerator* action)
 
   fRandomVtxCmd = new G4UIcmdWithABool("/gen/genie/randomVtx", this);
   fRandomVtxCmd->SetGuidance("set random vertex in fiducial volume");
-  fRandomVtxCmd->SetDefaultValue(true);
+  fRandomVtxCmd->SetDefaultValue(false);
 
 }
 

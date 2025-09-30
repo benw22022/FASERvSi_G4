@@ -55,6 +55,7 @@ class GENIEGenerator : public GeneratorBase
     G4int DecodeInteractionType() const;
     G4int DecodeScatteringType() const;
     G4String EncodeProcessName() const;
+    G4ThreeVector GenerateRandomPoint(G4int currentIdx) const;
 };
 
 #endif
