@@ -247,7 +247,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //* SCT module and tracking layers
   SCTModuleGeometry sctModule = SCTModuleGeometry();
   fSCT_strip_log = sctModule.GetStripLogical();
-  fTruthTracker_log = sctModule.GetTruthTrackerPlaneLogical();
+  // fTruthTracker_log = sctModule.GetTruthTrackerPlaneLogical();
   G4LogicalVolume* tracking_hoz_layer_log = constructHozTrackingLayerLogical(sctModule);
   G4LogicalVolume* tracking_vert_layer_log = constructVertTrackingLayerLogical(sctModule);
   G4Box* tracking_layer_box = dynamic_cast<G4Box*>(tracking_vert_layer_log->GetSolid());
@@ -279,41 +279,37 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     checkOverlaps(Target_phys); // make sure that there are no overlaps - GENIE will make you suffer if there are!./
 
     G4VPhysicalVolume* SD_phys;
-    pos += tungsten_thickness/2 + tracking_layer_thickness/2;
+    pos += tungsten_thickness/4;
     
-    G4double shift = DetectorParameters::Get()->flayerShift;
-    G4ThreeVector trans = G4ThreeVector(0, shift, pos);  
-    if (i%4 == 1) trans = G4ThreeVector(shift, 0, pos);   // shift the position of every layer a bit so there are no holes
-    if (i%4 == 2) trans = G4ThreeVector(0, -shift, pos);
-    if (i%4 == 3) trans = G4ThreeVector(-shift, 0, pos);
-
-    G4RotationMatrix* rot = new G4RotationMatrix();
-    rot->rotateZ(180 * deg);  // flip every layer
-
-    if (i%4 == 0)
-    {
-      // SD_phys = new G4PVPlacement(0, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
-      SD_phys = new G4PVPlacement(0, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
-    }
-    else if (i%4 == 1)
-    {
-      // SD_phys = new G4PVPlacement(0, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
-      SD_phys = new G4PVPlacement(0, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
-    }
-    else if (i%4 == 2)
-    {
-      // SD_phys = new G4PVPlacement(0, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
-      SD_phys = new G4PVPlacement(rot, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
-    }
-    else if (i%4 == 3)
-    {
-      // SD_phys = new G4PVPlacement(0, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
-      SD_phys = new G4PVPlacement(rot, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
-    }
-
-    pos += tungsten_thickness/2 + tracking_layer_thickness/2;
-    checkOverlaps(SD_phys);
+    G4Box* tracking_layer_box = new G4Box("Tracker_box", DetectorParameters::Get()->fdetWidth/2, DetectorParameters::Get()->fdetHeight/2, 0.1*mm);
+    G4LogicalVolume* tracking_layer_log = new G4LogicalVolume(tracking_layer_box, fAir, "Tracker_log");
+    SD_phys = new G4PVPlacement(0, G4ThreeVector(0, 0, pos), tracking_layer_log, "HozLayer_phys", experimentalHall_log, false, 0);
+    fTruthTracker_log = tracking_layer_log;
   }
+  //   if (i%4 == 0)
+  //   {
+  //     // SD_phys = new G4PVPlacement(0, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
+  //     SD_phys = new G4PVPlacement(0, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
+  //   }
+  //   else if (i%4 == 1)
+  //   {
+  //     // SD_phys = new G4PVPlacement(0, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
+  //     SD_phys = new G4PVPlacement(0, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
+  //   }
+  //   else if (i%4 == 2)
+  //   {
+  //     // SD_phys = new G4PVPlacement(0, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
+  //     SD_phys = new G4PVPlacement(rot, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
+  //   }
+  //   else if (i%4 == 3)
+  //   {
+  //     // SD_phys = new G4PVPlacement(0, trans, tracking_hoz_layer_log, "HozLayer_phys", experimentalHall_log, false, i);
+  //     SD_phys = new G4PVPlacement(rot, trans, tracking_vert_layer_log, "VertLayer_phys", experimentalHall_log, false, i);
+  //   }
+
+  //   pos += tungsten_thickness/2 + tracking_layer_thickness/2;
+  //   checkOverlaps(SD_phys);
+  // }
 
   // Print mass and length of the detector
   G4cout << "Detector length = " << pos - DetectorParameters::Get()->ftargetStartPosZ << " mm" << G4endl;
@@ -333,14 +329,14 @@ void DetectorConstruction::ConstructSDandField(){
   
   G4SDManager *sdman = G4SDManager::GetSDMpointer();
 
-  // Make the strips sensitive
-  SCTModuleDetector* sensDet = new SCTModuleDetector("strip_detector");
-  fSCT_strip_log->SetSensitiveDetector(sensDet);
-  sdman->AddNewDetector(sensDet);
+  // // Make the strips sensitive
+  // SCTModuleDetector* sensDet = new SCTModuleDetector("strip_detector");
+  // fSCT_strip_log->SetSensitiveDetector(sensDet);
+  // sdman->AddNewDetector(sensDet);
 
-  // Dummy Sensitive Detector so that we can visualise spacepoints in event display
-  auto* recoSD = new RecoSpacePointSD("RecoSpacePointsSD");
-  sdman->AddNewDetector(recoSD);
+  // // Dummy Sensitive Detector so that we can visualise spacepoints in event display
+  // auto* recoSD = new RecoSpacePointSD("RecoSpacePointsSD");
+  // sdman->AddNewDetector(recoSD);
 
   // Add a sensitive detector for truth matching
   auto* truthTrackerSD = new TruthTrackerSD("truth_tracker");

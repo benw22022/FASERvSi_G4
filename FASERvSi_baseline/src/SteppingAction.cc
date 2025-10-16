@@ -15,14 +15,17 @@ SteppingAction::SteppingAction(RunAction* runAction)
 
 void SteppingAction::UserSteppingAction(const G4Step* aStep) {
 
-  //TrackLiveDebugging(aStep);
-
   G4Track* aTrack = aStep->GetTrack();
-  G4ThreeVector post_pos = aStep->GetPostStepPoint()->GetPosition();
+  G4int pdgid = aTrack->GetParticleDefinition()->GetPDGEncoding();
+  if (abs(pdgid) != 13) {
+    aTrack->SetTrackStatus(G4TrackStatus::fStopAndKill);
+    return;
+  }
 
+  //TrackLiveDebugging(aStep);
   // if the track is out of the active volumes/area, kill this track
+  G4ThreeVector post_pos = aStep->GetPostStepPoint()->GetPosition();
   G4VPhysicalVolume* volume = aStep->GetPostStepPoint()->GetTouchable()->GetVolume();
-
   // if( volume->GetName() == "expHall_P" ) aTrack->SetTrackStatus(G4TrackStatus::fStopAndKill);
 }
 

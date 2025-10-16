@@ -70,12 +70,17 @@ G4bool TruthTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist){
   G4double time = track->GetDynamicParticle()->Get4Momentum().t();
   
   G4VPhysicalVolume* physVol = preStepPoint->GetPhysicalVolume();
-  G4int module_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(1);
-  G4int layer_number = preStepPoint->GetTouchableHandle()->GetCopyNumber(2);
+  G4int module_number = 0 ; //preStepPoint->GetTouchableHandle()->GetCopyNumber(1);
+  G4int layer_number = 0; //preStepPoint->GetTouchableHandle()->GetCopyNumber(2);
 
   G4TouchableHistory* touchable = (G4TouchableHistory*)(preStepPoint->GetTouchable());
   G4ThreeVector sensorCenterGlobal = touchable->GetTranslation();
   G4double sensorCentreZ = sensorCenterGlobal.z();
+
+  if (abs(pdgid) != 13) {
+    // Only record hits from muons for now
+    return false;
+  }
 
   // G4cout << G4endl;
   // for (int i = 0; i <= touchable->GetHistoryDepth(); ++i) {

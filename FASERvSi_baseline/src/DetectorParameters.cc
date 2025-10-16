@@ -5,20 +5,20 @@ DetectorParameters *DetectorParameters::me = 0;
 
 DetectorParameters::DetectorParameters()
 {
-    fexpHall_x = 1*m;
-    fexpHall_y = 1*m;
-    fexpHall_z = 3*m;
+    fexpHall_x = 1.5*m;
+    fexpHall_y = 1.5*m;
+    fexpHall_z = 5/2*m;
     
     // fnumSCTLayers = 50;
-    fnumSCTLayers = 100;
+    fnumSCTLayers = 1;
     ftargetStartPosZ = 0*mm;
-    fdetWidth = 300*mm;
+    fdetWidth = 1*m; //300*mm;
     // fdetHeight = 300*2*mm;
-    fdetHeight = 300*mm;
+    fdetHeight = 1*m; //300*mm;
     flayerShift = 3*mm; // amount to translate layers up/down left/right to plug gaps
 
     // ftungstenThickness = 13.92*mm;
-    ftungstenThickness = 0.9*mm;
+    ftungstenThickness = 1052*mm;
 }
 
 DetectorParameters* DetectorParameters::Get()

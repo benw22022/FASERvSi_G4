@@ -551,102 +551,103 @@ void AnalysisManager::FillHitsOutput()
 {
   G4cout << "==== Filling Hits output trees ====" << G4endl;
   int nHits = 0;
-  G4int nHC = fHCofEvent->GetNumberOfCollections();
-  for (G4int i = 0; i < nHC; ++i) {
-      auto* hc = fHCofEvent->GetHC(i);
-      auto* recoHitCollection = dynamic_cast<SCTModuleHitCollection*>(hc);
-      if (recoHitCollection && recoHitCollection->GetName() == "RecoSpacePoints") {
+  auto* hc = fHCofEvent->GetHC(0);
+  // G4int nHC = fHCofEvent->GetNumberOfCollections();
+  // for (G4int i = 0; i < nHC; ++i) {
+  //     auto* hc = fHCofEvent->GetHC(i);
+  //     auto* recoHitCollection = dynamic_cast<SCTModuleHitCollection*>(hc);
+  // //     if (recoHitCollection && recoHitCollection->GetName() == "RecoSpacePoints") {
         
-        G4cout << "Found hit collection: " << recoHitCollection->GetName() << G4endl;
-        std::map<G4int, G4int> sub_part_map{};
-        for (auto hit : *recoHitCollection->GetVector())
-        {
-          // std::cout << "Processing hit from track ID " << hit->GetTrackID() << " with PDG " << hit->GetPDGID() << " and charge " << hit->GetCharge() << std::endl;
-          if (hit->GetCharge() == 0) { continue; } // skip neutral particles, they don't hit
+  //       G4cout << "Found hit collection: " << recoHitCollection->GetName() << G4endl;
+  //       std::map<G4int, G4int> sub_part_map{};
+  //       for (auto hit : *recoHitCollection->GetVector())
+  //       {
+  //         // std::cout << "Processing hit from track ID " << hit->GetTrackID() << " with PDG " << hit->GetPDGID() << " and charge " << hit->GetCharge() << std::endl;
+  //         if (hit->GetCharge() == 0) { continue; } // skip neutral particles, they don't hit
 
-          nHits++;
-          recoHitsEventID = evtID;
-          recoHitsX.push_back(hit->GetX());
-          recoHitsY.push_back(hit->GetY());
-          recoHitsZ.push_back(hit->GetZ());
-          recoHitsPx.push_back(hit->GetPx());
-          recoHitsPy.push_back(hit->GetPy());
-          recoHitsPz.push_back(hit->GetPz());
-          recoHitsE.push_back(hit->GetEnergy());
-          recoHitsMass.push_back(hit->GetMass());
-          recoHitsCharge.push_back(hit->GetCharge());
-          recoHitsPDGC.push_back(hit->GetPDGID());
-          recoHitsIsTruthMatched.push_back(hit->GetIsTruthMatched());
-          recoHitsModuleID.push_back(hit->GetModuleNumber());
-          recoHitsLayerID.push_back(hit->GetLayerNumber());
-          recoHitsTrackID.push_back(hit->GetTrackID());
-          recoHitsParentID.push_back(hit->GetParentID());
-          recoHitsTruthHitID.push_back(hit->GetTruthHitID());
+  //         nHits++;
+  //         recoHitsEventID = evtID;
+  //         recoHitsX.push_back(hit->GetX());
+  //         recoHitsY.push_back(hit->GetY());
+  //         recoHitsZ.push_back(hit->GetZ());
+  //         recoHitsPx.push_back(hit->GetPx());
+  //         recoHitsPy.push_back(hit->GetPy());
+  //         recoHitsPz.push_back(hit->GetPz());
+  //         recoHitsE.push_back(hit->GetEnergy());
+  //         recoHitsMass.push_back(hit->GetMass());
+  //         recoHitsCharge.push_back(hit->GetCharge());
+  //         recoHitsPDGC.push_back(hit->GetPDGID());
+  //         recoHitsIsTruthMatched.push_back(hit->GetIsTruthMatched());
+  //         recoHitsModuleID.push_back(hit->GetModuleNumber());
+  //         recoHitsLayerID.push_back(hit->GetLayerNumber());
+  //         recoHitsTrackID.push_back(hit->GetTrackID());
+  //         recoHitsParentID.push_back(hit->GetParentID());
+  //         recoHitsTruthHitID.push_back(hit->GetTruthHitID());
           
 
-          //* Here we compute a unique particle ID following the Acts convention
-          //* (I'm reusing some code I wrote for a different project (FPFSim) here)
-          //* This will allow us to get to write out the primary/secondary particles of the event 
-          auto particleId = ActsFatras::Barcode();
-          particleId.setVertexPrimary(1);
-          particleId.setVertexSecondary(0);
-          particleId.setParticle(hit->GetTrackID() - 1); // The track ID is the primary particle index plus one
-          particleId.setGeneration(hit->GetParentID());
+  //         //* Here we compute a unique particle ID following the Acts convention
+  //         //* (I'm reusing some code I wrote for a different project (FPFSim) here)
+  //         //* This will allow us to get to write out the primary/secondary particles of the event 
+  //         auto particleId = ActsFatras::Barcode();
+  //         particleId.setVertexPrimary(1);
+  //         particleId.setVertexSecondary(0);
+  //         particleId.setParticle(hit->GetTrackID() - 1); // The track ID is the primary particle index plus one
+  //         particleId.setGeneration(hit->GetParentID());
 
-          sub_part_map.try_emplace(hit->GetTrackID() - 1, sub_part_map.size());
+  //         sub_part_map.try_emplace(hit->GetTrackID() - 1, sub_part_map.size());
 
-          // This is a fudge - assumes that that the secondary particles are always sub-particles of the primary particle
-          particleId.setSubParticle(hit->GetParentID() == 0 ? 0 : sub_part_map[hit->GetTrackID() - 1]);
+  //         // This is a fudge - assumes that that the secondary particles are always sub-particles of the primary particle
+  //         particleId.setSubParticle(hit->GetParentID() == 0 ? 0 : sub_part_map[hit->GetTrackID() - 1]);
         
 
-          // Now fill the Acts particles tree
-          bool isDuplicate = false;
-          for (const auto &id : ActsParticlesParticleId)
-          {
-            if (id == particleId.value())
-            {
-              isDuplicate = true;
-            }
-          }
-          if (isDuplicate) continue; // Skip this particle if it's already been added
+  //         // Now fill the Acts particles tree
+  //         bool isDuplicate = false;
+  //         for (const auto &id : ActsParticlesParticleId)
+  //         {
+  //           if (id == particleId.value())
+  //           {
+  //             isDuplicate = true;
+  //           }
+  //         }
+  //         if (isDuplicate) continue; // Skip this particle if it's already been added
 
-          ActsParticlesParticleId.push_back(particleId.value());
-          ActsParticlesParticleType.push_back(hit->GetPDGID());
-          ActsParticlesProcess.push_back(0);
-          ActsParticlesVx.push_back(hit->GetTrackVertex().x());
-          ActsParticlesVy.push_back(hit->GetTrackVertex().y());
-          ActsParticlesVz.push_back(hit->GetTrackVertex().z());
-          ActsParticlesVt.push_back(0);
-          ActsParticlesPx.push_back(hit->GetTrackP4().px());
-          ActsParticlesPy.push_back(hit->GetTrackP4().py());
-          ActsParticlesPz.push_back(hit->GetTrackP4().pz());
-          ActsParticlesM.push_back(hit->GetTrackP4().m());
-          ActsParticlesQ.push_back(hit->GetCharge());
+  //         ActsParticlesParticleId.push_back(particleId.value());
+  //         ActsParticlesParticleType.push_back(hit->GetPDGID());
+  //         ActsParticlesProcess.push_back(0);
+  //         ActsParticlesVx.push_back(hit->GetTrackVertex().x());
+  //         ActsParticlesVy.push_back(hit->GetTrackVertex().y());
+  //         ActsParticlesVz.push_back(hit->GetTrackVertex().z());
+  //         ActsParticlesVt.push_back(0);
+  //         ActsParticlesPx.push_back(hit->GetTrackP4().px());
+  //         ActsParticlesPy.push_back(hit->GetTrackP4().py());
+  //         ActsParticlesPz.push_back(hit->GetTrackP4().pz());
+  //         ActsParticlesM.push_back(hit->GetTrackP4().m());
+  //         ActsParticlesQ.push_back(hit->GetCharge());
 
-          ActsParticlesEta.push_back(hit->GetTrackP4().eta());
-          ActsParticlesPhi.push_back(hit->GetTrackP4().phi());
-          ActsParticlesPt.push_back(pow(pow(hit->GetTrackP4().px(), 2) + pow(hit->GetTrackP4().py(), 2), 0.5));
-          ActsParticlesP.push_back(pow(pow(hit->GetTrackP4().px(), 2) + pow(hit->GetTrackP4().py(), 2) + pow(hit->GetTrackP4().pz(), 2), 0.5));
-          ActsParticlesVertexPrimary.push_back(hit->GetIsPrimaryTrack());     //? These variables need to be filled, but are unused by Acts
-          ActsParticlesVertexSecondary.push_back(hit->GetIsSecondaryTrack()); //? These variables need to be filled, but are unused by Acts
-          ActsParticlesParticle.push_back(1);                                 //? These variables need to be filled, but are unused by Acts
-          ActsParticlesGeneration.push_back(0);                               //? These variables need to be filled, but are unused by Acts
-          ActsParticlesSubParticle.push_back(0);                              //? These variables need to be filled, but are unused by Acts
-          ActsParticlesELoss.push_back(0);                                    //? These variables need to be filled, but are unused by Acts
-          ActsParticlesPathInX0.push_back(0);                                 //? These variables need to be filled, but are unused by Acts
-          ActsParticlesPathInL0.push_back(0);                                 //? These variables need to be filled, but are unused by Acts
-          ActsParticlesNumberOfHits.push_back(0);                             //? These variables need to be filled, but are unused by Acts
-          ActsParticlesOutcome.push_back(0);                                  //? These variables need to be filled, but are unused by Acts
-        } // end of loop over hits
-        fActsParticlesTree->Fill();
-        fRecoHitsTree->Fill();
+  //         ActsParticlesEta.push_back(hit->GetTrackP4().eta());
+  //         ActsParticlesPhi.push_back(hit->GetTrackP4().phi());
+  //         ActsParticlesPt.push_back(pow(pow(hit->GetTrackP4().px(), 2) + pow(hit->GetTrackP4().py(), 2), 0.5));
+  //         ActsParticlesP.push_back(pow(pow(hit->GetTrackP4().px(), 2) + pow(hit->GetTrackP4().py(), 2) + pow(hit->GetTrackP4().pz(), 2), 0.5));
+  //         ActsParticlesVertexPrimary.push_back(hit->GetIsPrimaryTrack());     //? These variables need to be filled, but are unused by Acts
+  //         ActsParticlesVertexSecondary.push_back(hit->GetIsSecondaryTrack()); //? These variables need to be filled, but are unused by Acts
+  //         ActsParticlesParticle.push_back(1);                                 //? These variables need to be filled, but are unused by Acts
+  //         ActsParticlesGeneration.push_back(0);                               //? These variables need to be filled, but are unused by Acts
+  //         ActsParticlesSubParticle.push_back(0);                              //? These variables need to be filled, but are unused by Acts
+  //         ActsParticlesELoss.push_back(0);                                    //? These variables need to be filled, but are unused by Acts
+  //         ActsParticlesPathInX0.push_back(0);                                 //? These variables need to be filled, but are unused by Acts
+  //         ActsParticlesPathInL0.push_back(0);                                 //? These variables need to be filled, but are unused by Acts
+  //         ActsParticlesNumberOfHits.push_back(0);                             //? These variables need to be filled, but are unused by Acts
+  //         ActsParticlesOutcome.push_back(0);                                  //? These variables need to be filled, but are unused by Acts
+  //       } // end of loop over hits
+  //       fActsParticlesTree->Fill();
+  //       fRecoHitsTree->Fill();
 
-        G4cout << "Total number of reconstructed hits: " << nHits << G4endl;
-    } // Close Reco Hits block
+  //       G4cout << "Total number of reconstructed hits: " << nHits << G4endl;
+  //   } // Close Reco Hits block
   
     //* Fill the truth hits tree
-    else
-    {
+    // else
+    // {
       auto* truthHitCollection = dynamic_cast<TruthHitCollection*>(hc);
       if (truthHitCollection && truthHitCollection->GetName() == "truth_tracker") {
     
@@ -680,8 +681,8 @@ void AnalysisManager::FillHitsOutput()
       }
     } // Close Truth Hits block
 
-  } // Close loop over hit collections
-}
+  // } // Close loop over hit collections
+// }
 
 float_t AnalysisManager::GetTotalEnergy(float_t px, float_t py, float_t pz, float_t m)
 {
