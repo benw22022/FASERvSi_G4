@@ -136,6 +136,8 @@ private:
   G4double fEnergy = -999.;
   //Charge
   G4double fCharge = -999.;
+  // Theta
+  G4double fTheta = -999.;
   // Momentum
   G4double fPx = -999.;
   G4double fPy = -999.;

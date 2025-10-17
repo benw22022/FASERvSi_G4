@@ -132,6 +132,7 @@ void AnalysisManager::bookPrimTree()
   fPrim->Branch("Phi", &primPhi, "Phi/F");
   fPrim->Branch("Pt", &primPt, "Pt/F");
   fPrim->Branch("P", &primP, "P/F");
+  fPrim->Branch("Theta", &primTheta, "Theta/F");
 }
 
 void AnalysisManager::bookTrkTree()
@@ -194,6 +195,7 @@ void AnalysisManager::bookHitsTrees()
   fTruthHitsTree->Branch("hit_energy", &truthHitsE);
   fTruthHitsTree->Branch("hit_mass", &truthHitsMass);
   fTruthHitsTree->Branch("hit_charge", &truthHitsCharge);
+  fTruthHitsTree->Branch("hit_theta", &truthHitsTheta);
   fTruthHitsTree->Branch("hit_truthHitID", &truthHitsID);
 
 
@@ -324,6 +326,7 @@ void AnalysisManager::BeginOfEvent()
   truthHitsMass.clear();
   truthHitsCharge.clear();
   truthHitsID.clear();
+  truthHitsTheta.clear();
 
 
   ActsParticlesParticleId.clear();
@@ -480,6 +483,7 @@ void AnalysisManager::FillPrimariesTree(const G4Event *event)
         primP = p4.vect().mag();
         primE = energy;
         primKE = energy - primM;
+        primTheta = p4.theta();
 
         // store a copy as a FPFParticle for further processing
         primaryIDs.push_back(primTrackID); //store to avoid duplicates
@@ -672,6 +676,7 @@ void AnalysisManager::FillHitsOutput()
           truthHitsTrackID.push_back(hit->GetTrackID());
           truthHitsParentID.push_back(hit->GetParentID());
           truthHitsID.push_back(hit->GetTruthHitID());
+          truthHitsTheta.push_back(hit->GetTrackP4().theta());
         } // end of loop over hits
         fTruthHitsTree->Fill();
 

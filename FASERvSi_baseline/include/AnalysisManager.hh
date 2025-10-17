@@ -148,6 +148,7 @@ class AnalysisManager {
     float_t primPz;
     float_t primE;
     float_t primKE;
+    float_t primTheta;
 
     //---------------------------------------------------
     // OUTPUT VARIABLES FOR Hits TREES
@@ -186,6 +187,7 @@ class AnalysisManager {
     std::vector<Float_t> truthHitsPz;
     std::vector<Float_t> truthHitsE;
     std::vector<Float_t> truthHitsMass;
+    std::vector<Float_t> truthHitsTheta;
     std::vector<Float_t> truthHitsCharge;
     std::vector<UInt_t> truthHitsID;
 
