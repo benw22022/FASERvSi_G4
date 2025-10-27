@@ -80,9 +80,8 @@ class AnalysisManager {
     TTree*   fPrim;
 
     TDirectory* fHits;
-    TTree*   fRecoHitsTree;
     TTree*   fTruthHitsTree;
-    TTree*   fActsParticlesTree;
+
 
     // track to primary ancestor
     std::map<G4int, G4int> trackToPrimaryAncestor;

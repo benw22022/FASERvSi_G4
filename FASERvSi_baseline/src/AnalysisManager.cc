@@ -64,9 +64,7 @@ AnalysisManager::AnalysisManager()
   fEvt = nullptr;
   fTrk = nullptr;
   fPrim = nullptr;
-  fRecoHitsTree = nullptr;
   fTruthHitsTree = nullptr;
-  fActsParticlesTree = nullptr;
   
   fSaveTrack = false;
 }
@@ -158,26 +156,6 @@ void AnalysisManager::bookHitsTrees()
   fHits = fFile->mkdir("Hits","Hits output",kTRUE);
   fFile->cd(fHits->GetName());
 
-  //* Reco Hits Tree [i == unsigned int; F == float; l == Long unsigned 64 int]
-  fRecoHitsTree = new TTree("recoHits", "recoHitsTree");
-  fRecoHitsTree->Branch("event_id", &recoHitsEventID, "event_id/i");
-  fRecoHitsTree->Branch("hit_x", &recoHitsX);
-  fRecoHitsTree->Branch("hit_y", &recoHitsY);
-  fRecoHitsTree->Branch("hit_z", &recoHitsZ);
-  fRecoHitsTree->Branch("hit_pdgc", &recoHitsPDGC);
-  fRecoHitsTree->Branch("hit_isTruthMatched", &recoHitsIsTruthMatched);
-  fRecoHitsTree->Branch("hit_moduleID", &recoHitsModuleID);
-  fRecoHitsTree->Branch("hit_layerID", &recoHitsLayerID);
-  fRecoHitsTree->Branch("hit_trackID", &recoHitsTrackID);
-  fRecoHitsTree->Branch("hit_parentID", &recoHitsParentID);
-  fRecoHitsTree->Branch("hit_truthHitID", &recoHitsTruthHitID);
-  fRecoHitsTree->Branch("hit_px", &recoHitsPx);
-  fRecoHitsTree->Branch("hit_py", &recoHitsPy);
-  fRecoHitsTree->Branch("hit_pz", &recoHitsPz);
-  fRecoHitsTree->Branch("hit_energy", &recoHitsE);
-  fRecoHitsTree->Branch("hit_mass", &recoHitsMass);
-  fRecoHitsTree->Branch("hit_charge", &recoHitsCharge);
-
   //* Truth Hits Tree [i == unsigned int; F == float; l == Long unsigned 64 int]
   fTruthHitsTree = new TTree("truthHits", "truthHitsTree");
   fTruthHitsTree->Branch("event_id", &truthHitsEventID, "event_id/i");
@@ -198,37 +176,6 @@ void AnalysisManager::bookHitsTrees()
   fTruthHitsTree->Branch("hit_theta", &truthHitsTheta);
   fTruthHitsTree->Branch("hit_truthHitID", &truthHitsID);
 
-
-  //* Acts truth particle tree
-  fActsParticlesTree = new TTree("particles", "ActsParticlesTree");
-  fActsParticlesTree->Branch("event_id", &recoHitsEventID, "event_id/i");
-  fActsParticlesTree->Branch("particle_id", &ActsParticlesParticleId);
-  fActsParticlesTree->Branch("particle_type", &ActsParticlesParticleType);
-  fActsParticlesTree->Branch("process", &ActsParticlesProcess);
-  fActsParticlesTree->Branch("vx", &ActsParticlesVx);
-  fActsParticlesTree->Branch("vy", &ActsParticlesVy);
-  fActsParticlesTree->Branch("vz", &ActsParticlesVz);
-  fActsParticlesTree->Branch("vt", &ActsParticlesVt);
-  fActsParticlesTree->Branch("px", &ActsParticlesPx);
-  fActsParticlesTree->Branch("py", &ActsParticlesPy);
-  fActsParticlesTree->Branch("pz", &ActsParticlesPz);
-  fActsParticlesTree->Branch("m", &ActsParticlesM);
-  fActsParticlesTree->Branch("q", &ActsParticlesQ);
-  fActsParticlesTree->Branch("eta", &ActsParticlesEta);
-  fActsParticlesTree->Branch("phi", &ActsParticlesPhi);
-  fActsParticlesTree->Branch("pt", &ActsParticlesPt);
-  fActsParticlesTree->Branch("p", &ActsParticlesP);
-  fActsParticlesTree->Branch("vertex_primary", &ActsParticlesVertexPrimary);
-  fActsParticlesTree->Branch("vertex_secondary", &ActsParticlesVertexSecondary);
-  fActsParticlesTree->Branch("particle", &ActsParticlesParticle);
-  fActsParticlesTree->Branch("generation", &ActsParticlesGeneration);
-  fActsParticlesTree->Branch("sub_particle", &ActsParticlesSubParticle);
-  fActsParticlesTree->Branch("e_loss", &ActsParticlesELoss);
-  fActsParticlesTree->Branch("total_x0", &ActsParticlesPathInX0);
-  fActsParticlesTree->Branch("total_l0", &ActsParticlesPathInL0);
-  fActsParticlesTree->Branch("number_of_hits", &ActsParticlesNumberOfHits);
-  fActsParticlesTree->Branch("outcome", &ActsParticlesOutcome);
-
   fFile->cd();
 }
 
@@ -246,7 +193,6 @@ void AnalysisManager::BeginOfRun()
   fFile = new TFile(fFilename.c_str(), "RECREATE");
   
   // Booking common output trees
-  bookEvtTree();
   bookPrimTree();
   if (fSaveTrack) bookTrkTree();
 
@@ -261,14 +207,11 @@ void AnalysisManager::EndOfRun()
   G4cout << "Run has ended, closing output" << G4endl;
   // save common trees at the top of the output file
   fFile->cd();
-  fEvt->Write();
   fPrim->Write();
   if (fSaveTrack) fTrk->Write();
 
   fFile->cd(fHits->GetName());
-  fRecoHitsTree->Write();
   fTruthHitsTree->Write();
-  fActsParticlesTree->Write();
   fFile->cd(); // go back to top
 
   fFile->Close();
@@ -365,9 +308,6 @@ void AnalysisManager::EndOfEvent(const G4Event *event)
   G4cout << "Ending event, filling output trees" << G4endl;
   /// evtID
   evtID = event->GetEventID();
-
-  // FILL EVENT TREE
-  FillEventTree(event);
 
   //-----------------------------------------------------------
 
@@ -469,9 +409,9 @@ void AnalysisManager::FillPrimariesTree(const G4Event *event)
         primVy = event->GetPrimaryVertex(ivtx)->GetPosition().y();
         primVz = event->GetPrimaryVertex(ivtx)->GetPosition().z();
         primVt = event->GetPrimaryVertex(ivtx)->GetT0();
-        primPx = primary_particle->GetMomentum().x();
-        primPy = primary_particle->GetMomentum().y();
-        primPz = primary_particle->GetMomentum().z();
+        primPx = primary_particle->GetMomentum().x()/GeV;
+        primPy = primary_particle->GetMomentum().y()/GeV;
+        primPz = primary_particle->GetMomentum().z()/GeV;
         primM = primary_particle->GetMass()/MeV;
         primQ = primary_particle->GetCharge();
 
@@ -496,7 +436,7 @@ void AnalysisManager::FillPrimariesTree(const G4Event *event)
         G4cout << G4endl;
         G4cout << "PrimaryParticleInfo: PDG code " << primPDG << G4endl
           << "Particle unique ID : " << primTrackID << G4endl
-          << "Momentum : (" << primPx << ", " << primPy << ", " << primPz << ") MeV" << G4endl
+          << "Momentum : (" << primPx << ", " << primPy << ", " << primPz << ") GeV" << G4endl
           << "Vertex : (" << primVx << ", " << primVy << ", " << primVz << ") mm" << G4endl;
 
         fPrim->Fill();
