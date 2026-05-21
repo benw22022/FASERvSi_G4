@@ -22,3 +22,6 @@ pythia8313
 *.tar.gz
 *.tgz
 /build
+logs/
+.viminfo
+.DS_Store
