@@ -1,0 +1,9 @@
+universe = vanilla
+executable = geom_bkg_sim.sh
+arguments = $(ProcId) gps_2024_allTracks.mac allTracks_2024 
+output = logs/job_$(ProcId).out
+error = logs/job_$(ProcId).err
+log = logs/job_$(ProcId).log
+request_cpus = 4
++JobFlavour = "longlunch"
+queue 1

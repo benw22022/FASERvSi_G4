@@ -1,0 +1,10 @@
+universe = vanilla
+executable = geom_bkg_sim.sh
+arguments = $(ProcId) gps_flat_1GeV_to_4500GeV.mac flat_1GeV_to_4500GeV 
+output = logs/job_2024_flat_$(ProcId).outi
+error = logs/job_2024_flat_$(ProcId).err
+log = logs/job_2024_flat_$(ProcId).log
+request_cpus = 1
+max_materialize=256
++JobFlavour = "longlunch"
+queue 1000

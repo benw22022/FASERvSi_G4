@@ -1,0 +1,10 @@
+universe = vanilla
+executable = geom_bkg_sim.sh
+arguments = $(ProcId) gps_2024_negTracks_missVetoNu.mac negTracks_2024_missVetoNu 
+output = logs/job_2024_negTracks_missVetoNu_$(ProcId).out
+error = logs/job_2024_negTracks_missVetoNu_$(ProcId).err
+log = logs/job_2024_negTracks_miss_VetoNu_$(ProcId).log
+request_cpus = 1
+max_materialize=256
++JobFlavour = "longlunch"
+queue 1000
